@@ -19,7 +19,7 @@ jobs:
           ./gradlew clean build
       - name: docker build
         run: |
-          docker build . -t toadlesss/monke:latest
+          docker build . -t toadlesss/monkebot:latest
       - name: docker push
         uses: docker/build-push-action@v1
         with:
@@ -35,5 +35,5 @@ jobs:
           password: ${{ secrets.SERVER_PASS }}
           port: 22
           script: |
-            cd ~/docker/monke
+            cd ~/docker/monkebot
             ./rebuild.sh
