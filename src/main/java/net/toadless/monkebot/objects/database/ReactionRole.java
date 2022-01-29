@@ -60,7 +60,7 @@ public class ReactionRole
         }
         catch (Exception exception)
         {
-            monke.getLogger().error("A database error occurred", exception);
+            monke.getLogger().error("A mongo error occurred", exception);
             return Collections.emptyList();
         }
     }
@@ -79,7 +79,7 @@ public class ReactionRole
         }
         catch (Exception exception)
         {
-            monke.getLogger().error("A database error occurred", exception);
+            monke.getLogger().error("A mongo error occurred", exception);
         }
     }
 
@@ -144,12 +144,12 @@ public class ReactionRole
             }
             catch (Exception exception)
             {
-                monke.getLogger().error("A database error occurred", exception);
+                monke.getLogger().error("A mongo error occurred", exception);
             }
         }
         catch (Exception exception)
         {
-            monke.getLogger().error("A database error occurred", exception);
+            monke.getLogger().error("A mongo error occurred", exception);
         }
     }
 
@@ -166,7 +166,7 @@ public class ReactionRole
         }
         catch (Exception exception)
         {
-            monke.getLogger().error("A database error occurred", exception);
+            monke.getLogger().error("A mongo error occurred", exception);
             return false;
         }
     }
