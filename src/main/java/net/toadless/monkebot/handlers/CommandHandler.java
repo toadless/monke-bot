@@ -18,6 +18,8 @@ import net.toadless.monkebot.objects.bot.ConfigOption;
 import net.toadless.monkebot.objects.cache.GuildSettingsCache;
 import net.toadless.monkebot.objects.command.Command;
 import net.toadless.monkebot.objects.command.CommandEvent;
+import net.toadless.monkebot.objects.command.CommandFlag;
+import net.toadless.monkebot.util.BlacklistUtils;
 import net.toadless.monkebot.util.EmbedUtils;
 
 public class CommandHandler
@@ -138,8 +140,14 @@ public class CommandHandler
 
     private void runCommand(String prefix, String content, MessageReceivedEvent event)
     {
+        boolean containsBlacklist = BlacklistUtils.isBlacklistedPhrase(event, monke);
+
         if (!content.startsWith(prefix))
         {
+            if (containsBlacklist)
+            {
+                deleteBlacklisted(event);
+            }
             return;
         }
 
@@ -165,8 +173,19 @@ public class CommandHandler
 
         if (cmd == null)
         {
+            if (containsBlacklist)
+            {
+                deleteBlacklisted(event);
+                return;
+            }
             EmbedUtils.sendError(event.getChannel(), "Command `" + command + "` was not found.\n " +
                     "See " + prefix + "help for help.");
+            return;
+        }
+
+        if (containsBlacklist && cmd.hasFlag(CommandFlag.BLACKLIST_BYPASS))
+        {
+            deleteBlacklisted(event);
             return;
         }
 
