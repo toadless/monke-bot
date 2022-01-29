@@ -13,6 +13,7 @@ import net.toadless.monkebot.objects.database.Warning;
 import net.toadless.monkebot.objects.exception.CommandException;
 import net.toadless.monkebot.objects.exception.CommandHierarchyException;
 import net.toadless.monkebot.objects.exception.CommandInputException;
+import net.toadless.monkebot.objects.pojos.Warnings;
 import net.toadless.monkebot.util.CommandChecks;
 import net.toadless.monkebot.util.CommandUtils;
 import net.toadless.monkebot.util.Parser;
@@ -53,16 +54,16 @@ public class WarnRemoveCommand extends Command
                         OptionalInt warningNumber = new Parser(args.get(1), event).parseAsUnsignedInt();
                         if (warningNumber.isPresent())
                         {
-                            Warning warning = new Warning(event.getGuild(), user, event.getMonke());
+                            Warnings warn = new Warning(event.getGuild(), user, event.getMonke()).getByWarnId(warningNumber.getAsInt());
 
-                            if (warning.get()<1)
+                            if (warn == null)
                             {
                                 failure.accept(new CommandInputException("Invalid warning specified."));
                                 return;
                             }
 
                             new Warning(guild, user, event.getMonke()).remove(warningNumber.getAsInt());
-                            event.replySuccess("Removed " + warningNumber.getAsInt() + " warning(s).");
+                            event.replySuccess("Removed warning: " + warn.getWarnText());
                         }
                     });
                 }

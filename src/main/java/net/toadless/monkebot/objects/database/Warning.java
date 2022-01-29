@@ -1,23 +1,17 @@
 package net.toadless.monkebot.objects.database;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.User;
 import net.toadless.monkebot.Monke;
 import net.toadless.monkebot.objects.pojos.Warnings;
-import net.toadless.monkebot.util.DatabaseUtils;
 import org.bson.Document;
-import org.bson.conversions.Bson;
-
-import static com.mongodb.client.model.Filters.and;
-import static com.mongodb.client.model.Filters.eq;
 
 public class Warning
 {
-    private static final Map<Long, Integer> cachedWarns = new HashMap<>();
     private static final String collection = "warns";
 
     private final long userId;
@@ -31,80 +25,102 @@ public class Warning
         this.monke = monke;
     }
 
-    public void add(int amount)
+    public void add(String reason)
     {
-        var warns = get();
-
         try
         {
             var connection = monke.getDatabaseHandler().getConnection();
             var database = connection.getDatabase(monke.getDatabaseHandler().getDatabase().getName());
             var collection = database.getCollection(Warning.collection, Warnings.class);
-            var guilds = collection.find(new Document("guildId", guildId).append("userId", userId));
+            var document = new Document("guildId", guildId).append("userId", userId);
+            var result = collection.countDocuments(document);
 
-            Bson filter = and(eq("guildId", guildId), eq("userId", userId));
-
-            if (guilds.first() == null) collection.insertOne(new Warnings(guildId, userId, warns + amount));
-            else collection.updateOne(filter, new Document("$set", new Document("amount", warns + amount)));
+            collection.insertOne(new Warnings(
+                    result+1,
+                    guildId,
+                    userId,
+                    LocalDateTime.now(),
+                    reason
+            ));
         }
         catch (Exception exception)
         {
-            monke.getLogger().error("A database error occurred", exception);
+            monke.getLogger().error("A mongo error occurred", exception);
         }
-
-        cachedWarns.put(DatabaseUtils.getWarnId(Objects.requireNonNull(Objects.requireNonNull(monke.getShardManager().getGuildById(guildId)).getMemberById(userId))), warns + amount);
     }
 
-    public void remove(int amount)
-    {
-        var warns = get();
 
+    public void remove(long key)
+    {
         try
         {
             var connection = monke.getDatabaseHandler().getConnection();
             var database = connection.getDatabase(monke.getDatabaseHandler().getDatabase().getName());
             var collection = database.getCollection(Warning.collection, Warnings.class);
-            var guilds = collection.find(new Document("guildId", guildId).append("userId", userId));
+            var document = new Document("guildId", guildId).append("userId", userId).append("_id", key);
 
-            Bson filter = and(eq("guildId", guildId), eq("userId", userId));
-
-            if (guilds.first() == null) collection.insertOne(new Warnings(guildId, userId, warns - amount));
-            else collection.updateOne(filter, new Document("$set", new Document("amount", warns - amount)));
+            collection.findOneAndDelete(document);
         }
         catch (Exception exception)
         {
-            monke.getLogger().error("A database error occurred", exception);
+            monke.getLogger().error("A mongo error occurred", exception);
         }
-
-        cachedWarns.put(DatabaseUtils.getWarnId(Objects.requireNonNull(Objects.requireNonNull(monke.getShardManager().getGuildById(guildId)).getMemberById(userId))), warns - amount);
     }
 
-    public int get()
+    public List<Warnings> get()
     {
-        var warnId = DatabaseUtils.getWarnId(Objects.requireNonNull(Objects.requireNonNull(monke.getShardManager().getGuildById(guildId)).getMemberById(userId)));
-
-        if (isPresent(warnId)) return cachedWarns.get(warnId);
-
+        List<Warnings> result = new ArrayList<>();
         try
         {
             var connection = monke.getDatabaseHandler().getConnection();
             var database = connection.getDatabase(monke.getDatabaseHandler().getDatabase().getName());
             var collection = database.getCollection(Warning.collection, Warnings.class);
-            var warns = collection.find(new Document("guildId", guildId).append("userId", userId));
+            var document = new Document("guildId", guildId).append("userId", userId);
+            var query = collection.find(document);
 
-            if (warns.first() == null) { collection.insertOne(new Warnings(guildId, userId, 0)); return 0; }
+            for (var value : query)
+            {
+                result.add(new Warnings(value.getId(), value.getUserId(), value.getGuildId(), value.getTimestamp(), value.getWarnText()));
+            }
 
-            return Objects.requireNonNull(warns.first()).getAmount();
         }
         catch (Exception exception)
         {
-            monke.getLogger().error("A database error occurred", exception);
-            return 0;
+            monke.getLogger().error("A mongo error occurred", exception);
+        }
+
+        return result;
+    }
+
+    public Warnings getByWarnId(long warnId)
+    {
+        try
+        {
+            var connection = monke.getDatabaseHandler().getConnection();
+            var database = connection.getDatabase(monke.getDatabaseHandler().getDatabase().getName());
+            var collection = database.getCollection(Warning.collection, Warnings.class);
+            var document = new Document("guildId", guildId).append("userId", userId).append("_id", warnId);
+            var result = collection.find(document).first();
+
+            if (result != null)
+            {
+                var warn = result;
+                return new Warnings(warn.getId(), warn.getUserId(), warn.getGuildId(), warn.getTimestamp(), warn.getWarnText());
+            }
+            else
+            {
+                return null;
+            }
+        }
+        catch (Exception exception)
+        {
+            monke.getLogger().error("A mongo error occurred", exception);
+            return null;
         }
     }
 
     public boolean isPresent(long warnId)
     {
-        return cachedWarns.containsKey(warnId);
+        return getByWarnId(warnId) != null;
     }
 }

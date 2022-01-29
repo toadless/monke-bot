@@ -12,8 +12,10 @@ import net.toadless.monkebot.objects.command.CommandFlag;
 import net.toadless.monkebot.objects.database.Warning;
 import net.toadless.monkebot.objects.exception.CommandException;
 import net.toadless.monkebot.objects.exception.CommandInputException;
+import net.toadless.monkebot.objects.pojos.Warnings;
 import net.toadless.monkebot.util.CommandChecks;
 import net.toadless.monkebot.util.Parser;
+import net.toadless.monkebot.util.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 public class WarningShowCommand extends Command
@@ -40,11 +42,21 @@ public class WarningShowCommand extends Command
 
             Guild guild = event.getGuild();
             MessageChannel channel = event.getChannel();
-            Warning warning = new Warning(guild, user, event.getMonke());
+            List<Warnings> warnings = new Warning(guild, user, event.getMonke()).get();
+            StringBuilder stringBuilder = new StringBuilder();
+
+            warnings.forEach(warn -> stringBuilder
+                    .append("**ID: ")
+                    .append(warn.getId())
+                    .append("** ")
+                    .append(warn.getWarnText())
+                    .append(" - ")
+                    .append(StringUtils.parseDateTime(warn.getTimestamp()))
+                    .append("\n"));
 
             channel.sendMessage(new EmbedBuilder()
                     .setTitle("Warnings for " + user.getAsTag())
-                    .setDescription(warning.get() == 0 ? "This user has no warnings" : warning.get() + " warning(s).")
+                    .setDescription(stringBuilder.length() == 0 ? "This user has no warnings" : stringBuilder.toString())
                     .setColor(Constants.EMBED_COLOUR)
                     .build()).queue();
         });

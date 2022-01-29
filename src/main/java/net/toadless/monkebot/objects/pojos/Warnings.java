@@ -1,6 +1,7 @@
 package net.toadless.monkebot.objects.pojos;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 /**
  * This class is a reference of what we pull from the database.
@@ -8,33 +9,41 @@ import java.io.Serializable;
 @SuppressWarnings ({"all", "unchecked", "rawtypes"})
 public class Warnings implements Serializable
 {
+    private Long id;
     private Long guildId;
     private Long userId;
-    private int amount;
+    private LocalDateTime timestamp;
+    private String warnText;
 
     public Warnings(Warnings value)
     {
+        this.id = value.id;
         this.guildId = value.guildId;
         this.userId = value.userId;
-        this.amount = value.amount;
+        this.timestamp = value.timestamp;
+        this.warnText = value.warnText;
     }
 
     public Warnings(
+            Long id,
             Long guildId,
             Long userId,
-            int amount
+            LocalDateTime timestamp,
+            String warnText
     )
     {
+        this.id = id;
         this.guildId = guildId;
         this.userId = userId;
-        this.amount = amount;
+        this.timestamp = timestamp;
+        this.warnText = warnText;
     }
 
     public Warnings() {}
 
-    public Long getGuildId()
+    public void setId(Long id)
     {
-        return this.guildId;
+        this.id = id;
     }
 
     public void setGuildId(Long guildId)
@@ -42,23 +51,58 @@ public class Warnings implements Serializable
         this.guildId = guildId;
     }
 
-    public Long getUserId()
-    {
-        return this.userId;
-    }
-
     public void setUserId(Long userId)
     {
         this.userId = userId;
     }
 
-    public int getAmount()
+    public void setTimestamp(LocalDateTime timestamp)
     {
-        return amount;
+        this.timestamp = timestamp;
     }
 
-    public void setAmount(int amount)
+    public void setWarnText(String warnText)
     {
-        this.amount = amount;
+        this.warnText = warnText;
+    }
+
+    public Long getId()
+    {
+        return id;
+    }
+
+    public Long getGuildId()
+    {
+        return guildId;
+    }
+
+    public Long getUserId()
+    {
+        return userId;
+    }
+
+    public LocalDateTime getTimestamp()
+    {
+        return timestamp;
+    }
+
+    public String getWarnText()
+    {
+        return warnText;
+    }
+
+    @Override
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder("Warnings (");
+
+        sb.append(id);
+        sb.append(", ").append(guildId);
+        sb.append(", ").append(userId);
+        sb.append(", ").append(timestamp);
+        sb.append(", ").append(warnText);
+
+        sb.append(")");
+        return sb.toString();
     }
 }

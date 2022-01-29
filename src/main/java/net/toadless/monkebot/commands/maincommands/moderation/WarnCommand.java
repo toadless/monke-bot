@@ -70,7 +70,7 @@ public class WarnCommand extends Command
                     return;
                 }
 
-                new Warning(guild, user, event.getMonke()).add(1);
+                new Warning(guild, user, event.getMonke()).add(reason);
                 event.replySuccess("Warned " + user.getAsMention() + " for reason: " + reason);
 
                 user.openPrivateChannel()
