@@ -20,6 +20,7 @@ import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.api.sharding.ShardManager;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
+import net.toadless.monkebot.events.command.ReportCommandReactionAdd;
 import net.toadless.monkebot.events.logging.MemberEventsLogging;
 import net.toadless.monkebot.events.logging.MessageEventsLogging;
 import net.toadless.monkebot.events.logging.VoiceEventsLogging;
@@ -119,6 +120,8 @@ public class Monke extends ListenerAdapter
 
                         new MessageEventsMain(this),
                         new GuildEventsMain(this),
+
+                        new ReportCommandReactionAdd(this),
 
                         new MemberEventsLogging(this),
                         new VoiceEventsLogging(this),

@@ -19,8 +19,12 @@ public class MessageEventsMain extends ListenerAdapter
     @Override
     public void onMessageReceived(MessageReceivedEvent event)
     {
-        Guild guild = event.getGuild();
-        MessageCache.getCache(guild.getIdLong()).put(new CachedMessage(event.getMessage()));
+        if (event.isFromGuild() && !event.getAuthor().isBot() && !event.isWebhookMessage())
+        {
+            Guild guild = event.getGuild();
+
+            MessageCache.getCache(guild.getIdLong()).put(new CachedMessage(event.getMessage()));
+        }
 
         monke.getCommandHandler().handleEvent(event);
     }

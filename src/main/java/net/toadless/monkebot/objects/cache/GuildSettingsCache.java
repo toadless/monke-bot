@@ -135,6 +135,16 @@ public class GuildSettingsCache implements ICache<String, CachedGuildSetting>
         cachePut("prefix", newPrefix);
     }
 
+    public long getReportChannel()
+    {
+        return cacheGetLong("reportchannel", -1L);
+    }
+
+    public void setReportChannel(long newChannel)
+    {
+        cachePut("reportchannel", newChannel);
+    }
+
     @SuppressWarnings("unchecked")
     private <T> T getField(String field, T value)
     {
