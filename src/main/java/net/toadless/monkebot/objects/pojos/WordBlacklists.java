@@ -2,6 +2,10 @@ package net.toadless.monkebot.objects.pojos;
 
 import java.io.Serializable;
 
+/**
+ * This class is a reference of what we pull from the database.
+ */
+@SuppressWarnings ({"all", "unchecked", "rawtypes"})
 public class WordBlacklists implements Serializable
 {
     private Long guildId;
