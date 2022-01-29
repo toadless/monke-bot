@@ -5,6 +5,7 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.toadless.monkebot.Monke;
+import net.toadless.monkebot.objects.cache.GeneralGuildCache;
 import net.toadless.monkebot.objects.pojos.ChannelBlacklists;
 import net.toadless.monkebot.objects.pojos.WordBlacklists;
 import org.bson.Document;
@@ -46,49 +47,12 @@ public class BlacklistUtils
 
     public static boolean isChannelBlacklisted(MessageReceivedEvent event, Monke monke)
     {
-        if (!event.isFromGuild())
-        {
-            return false;
-        }
-
-        try
-        {
-            var connection = monke.getDatabaseHandler().getConnection();
-            var database = connection.getDatabase(monke.getDatabaseHandler().getDatabase().getName());
-            var collection = database.getCollection(BlacklistUtils.channelCollection, ChannelBlacklists.class);
-            var document = new Document("guildId", event.getGuild().getIdLong()).append("channelId", event.getChannel().getIdLong());
-            var result = collection.find(document);
-
-            return result.first() != null;
-        }
-        catch (Exception exception)
-        {
-            monke.getLogger().error("A mongo error occurred", exception);
-            return false;
-        }
+        return GeneralGuildCache.getCache(event.getGuild().getIdLong(), monke).getBlacklistedChannels().contains(event.getChannel());
     }
 
     public static List<String> getBlacklistedPhrases(Guild guild, Monke monke)
     {
-        List<String> result = new ArrayList<>();
-        try
-        {
-            var connection = monke.getDatabaseHandler().getConnection();
-            var database = connection.getDatabase(monke.getDatabaseHandler().getDatabase().getName());
-            var collection = database.getCollection(BlacklistUtils.wordCollection, WordBlacklists.class);
-            var document = new Document("guildId", guild.getIdLong());
-            var query = collection.find(document);
-
-            for (var row : query)
-            {
-                result.add(row.getPhrase());
-            }
-        }
-        catch (Exception exception)
-        {
-            monke.getLogger().error("A mongo error occurred", exception);
-        }
-        return result;
+        return GeneralGuildCache.getCache(guild.getIdLong(), monke).getBlacklistedPhrases();
     }
 
     public static void addPhrase(Guild guild, String phrase, Monke monke)
@@ -103,6 +67,8 @@ public class BlacklistUtils
                     guild.getIdLong(),
                     phrase
             ));
+
+            GeneralGuildCache.getCache(guild.getIdLong(), monke).addBlacklistedPhrase(phrase);
         }
         catch (Exception exception)
         {
@@ -129,6 +95,9 @@ public class BlacklistUtils
                     guild.getIdLong(),
                     channel.getIdLong()
             ));
+
+            GeneralGuildCache.getCache(guild.getIdLong(), monke).addBlacklistedChannel(channel);
+
             return true;
         }
         catch (Exception exception)
@@ -141,23 +110,13 @@ public class BlacklistUtils
     public static List<ChannelBlacklists> getBlacklistedChannels(Guild guild, Monke monke)
     {
         List<ChannelBlacklists> result = new ArrayList<>();
-        try
-        {
-            var connection = monke.getDatabaseHandler().getConnection();
-            var database = connection.getDatabase(monke.getDatabaseHandler().getDatabase().getName());
-            var collection = database.getCollection(BlacklistUtils.channelCollection, ChannelBlacklists.class);
-            var document = new Document("guildId", guild.getIdLong());
-            var query = collection.find(document);
+        List<MessageChannel> blacklistedChannels = GeneralGuildCache.getCache(guild.getIdLong(), monke).getBlacklistedChannels();
 
-            for (var row : query)
-            {
-                result.add(new ChannelBlacklists(row.getGuildId(), row.getChannelId()));
-            }
-        }
-        catch (Exception exception)
+        for (var row : blacklistedChannels)
         {
-            monke.getLogger().error("A mongo error occurred", exception);
+            result.add(new ChannelBlacklists(guild.getIdLong(), row.getIdLong()));
         }
+
         return result;
     }
 
@@ -170,6 +129,8 @@ public class BlacklistUtils
             var collection = database.getCollection(BlacklistUtils.channelCollection, ChannelBlacklists.class);
             var document = new Document("guildId", guild.getIdLong()).append("channelId", channel.getIdLong());
             var delete = collection.deleteOne(document);
+
+            GeneralGuildCache.getCache(guild.getIdLong(), monke).removeBlacklistedChannel(channel);
 
             return delete.wasAcknowledged();
         }
@@ -190,6 +151,8 @@ public class BlacklistUtils
             var collection = database.getCollection(BlacklistUtils.wordCollection, WordBlacklists.class);
             var document = new Document("guildId", guild.getIdLong()).append("phrase", phrase);
             var delete = collection.deleteOne(document);
+
+            GeneralGuildCache.getCache(guild.getIdLong(), monke).removeBlacklistedPhrase(phrase);
 
             return delete.wasAcknowledged();
         }

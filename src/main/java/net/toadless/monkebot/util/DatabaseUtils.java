@@ -3,9 +3,12 @@ package net.toadless.monkebot.util;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.toadless.monkebot.Monke;
+import net.toadless.monkebot.objects.cache.GeneralGuildCache;
 import net.toadless.monkebot.objects.cache.GuildSettingsCache;
 import net.toadless.monkebot.objects.database.Tempban;
+import net.toadless.monkebot.objects.pojos.ChannelBlacklists;
 import net.toadless.monkebot.objects.pojos.Tempbans;
+import net.toadless.monkebot.objects.pojos.WordBlacklists;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +38,10 @@ public class DatabaseUtils
             var collection = database.getCollection(GuildSettingsCache.collection);
             var guilds = collection.find(new Document("_id", guild.getIdLong()));
 
-            if (guilds.first() == null) { collection.insertOne(new Document("_id", guild.getIdLong())); }
+            if (guilds.first() == null) collection.insertOne(new Document("_id", guild.getIdLong()));
+
+            syncBlacklistedChannels(guild, monke);
+            syncBlacklistedPhrases(guild, monke);
         }
         catch (Exception exception)
         {
@@ -76,6 +82,9 @@ public class DatabaseUtils
             var database = connection.getDatabase(monke.getDatabaseHandler().getDatabase().getName());
             var collection = database.getCollection(GuildSettingsCache.collection);
             collection.findOneAndDelete(eq("_id", guild.getIdLong()));
+
+            GuildSettingsCache.removeCache(guild.getIdLong());
+            GeneralGuildCache.removeCache(guild.getIdLong());
         }
         catch (Exception exception)
         {
@@ -83,8 +92,50 @@ public class DatabaseUtils
         }
     }
 
-    public static long getWarnId(Member member)
+
+    private static void syncBlacklistedPhrases(Guild guild, Monke monke)
     {
-        return (member.getIdLong() + member.getGuild().getIdLong());
+        try
+        {
+            var connection = monke.getDatabaseHandler().getConnection();
+            var database = connection.getDatabase(monke.getDatabaseHandler().getDatabase().getName());
+            var collection = database.getCollection(BlacklistUtils.wordCollection, WordBlacklists.class);
+            var document = new Document("guildId", guild.getIdLong());
+            var query = collection.find(document);
+
+            GeneralGuildCache generalGuildCache = GeneralGuildCache.getCache(guild.getIdLong(), monke);
+
+            for (var row : query)
+            {
+                generalGuildCache.addBlacklistedPhrase(row.getPhrase());
+            }
+        }
+        catch (Exception exception)
+        {
+            monke.getLogger().error("A mongo error occurred", exception);
+        }
+    }
+
+    private static void syncBlacklistedChannels(Guild guild, Monke monke)
+    {
+        try
+        {
+            var connection = monke.getDatabaseHandler().getConnection();
+            var database = connection.getDatabase(monke.getDatabaseHandler().getDatabase().getName());
+            var collection = database.getCollection(BlacklistUtils.channelCollection, ChannelBlacklists.class);
+            var document = new Document("guildId", guild.getIdLong());
+            var query = collection.find(document);
+
+            GeneralGuildCache generalGuildCache = GeneralGuildCache.getCache(guild.getIdLong(), monke);
+
+            for (var row : query)
+            {
+                generalGuildCache.addBlacklistedChannel(monke.getShardManager().getGuildById(guild.getIdLong()).getTextChannelById(row.getChannelId()));
+            }
+        }
+        catch (Exception exception)
+        {
+            monke.getLogger().error("A mongo error occurred", exception);
+        }
     }
 }
