@@ -16,7 +16,7 @@ public class GeneralGuildCache
 {
     private static final Map<Long, GeneralGuildCache> GUILD_CACHES = ExpiringMap.builder()
             .expirationPolicy(ExpirationPolicy.ACCESSED)
-            .expiration(1, TimeUnit.MINUTES)
+            .expiration(30, TimeUnit.MINUTES)
             .build();
 
     private final List<String> blacklistedPhrases;
