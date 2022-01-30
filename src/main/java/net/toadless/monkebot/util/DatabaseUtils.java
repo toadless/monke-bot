@@ -27,6 +27,38 @@ public class DatabaseUtils
         //Overrides the default, public, constructor
     }
 
+    public static void removeGuild(Guild guild, Monke monke)
+    {
+        LOGGER.debug("Removed guild " + guild.getId());
+        try
+        {
+            var connection = monke.getDatabaseHandler().getConnection();
+            var database = connection.getDatabase(monke.getDatabaseHandler().getDatabase().getName());
+            var collection = database.getCollection(GuildSettingsCache.collection);
+            collection.findOneAndDelete(eq("_id", guild.getIdLong()));
+        }
+        catch (Exception exception)
+        {
+            monke.getLogger().error("A mongodb error occurred", exception);
+        }
+    }
+
+    public static void removeGuild(long guildId, Monke monke)
+    {
+        LOGGER.debug("Removed guild " + guildId);
+        try
+        {
+            var connection = monke.getDatabaseHandler().getConnection();
+            var database = connection.getDatabase(monke.getDatabaseHandler().getDatabase().getName());
+            var collection = database.getCollection(GuildSettingsCache.collection);
+            collection.findOneAndDelete(eq("_id", guildId));
+        }
+        catch (Exception exception)
+        {
+            monke.getLogger().error("A mongodb error occurred", exception);
+        }
+    }
+
     public static void registerGuild(Guild guild, Monke monke)
     {
         LOGGER.debug("Registered guild " + guild.getId());
@@ -36,12 +68,28 @@ public class DatabaseUtils
             var database = connection.getDatabase(monke.getDatabaseHandler().getDatabase().getName());
             var collection = database.getCollection(GuildSettingsCache.collection);
             var guilds = collection.find(new Document("_id", guild.getIdLong()));
-
             if (guilds.first() == null) collection.insertOne(new Document("_id", guild.getIdLong()));
         }
         catch (Exception exception)
         {
-            monke.getLogger().error("A database error occurred", exception);
+            monke.getLogger().error("A mongodb error occurred", exception);
+        }
+    }
+
+    public static void registerGuild(long guildId, Monke monke)
+    {
+        LOGGER.debug("Registered guild " + guildId);
+        try
+        {
+            var connection = monke.getDatabaseHandler().getConnection();
+            var database = connection.getDatabase(monke.getDatabaseHandler().getDatabase().getName());
+            var collection = database.getCollection(GuildSettingsCache.collection);
+            var guilds = collection.find(new Document("_id", guildId));
+            if (guilds.first() == null) collection.insertOne(new Document("_id", guildId));
+        }
+        catch (Exception exception)
+        {
+            monke.getLogger().error("A mongodb error occurred", exception);
         }
     }
 
@@ -65,27 +113,9 @@ public class DatabaseUtils
         }
         catch (Exception exception)
         {
-            monke.getLogger().error("An SQL error occurred", exception);
+            monke.getLogger().error("A mongodb error occurred", exception);
         }
         return result;
-    }
-
-    public static void removeGuild(Guild guild, Monke monke)
-    {
-        try
-        {
-            var connection = monke.getDatabaseHandler().getConnection();
-            var database = connection.getDatabase(monke.getDatabaseHandler().getDatabase().getName());
-            var collection = database.getCollection(GuildSettingsCache.collection);
-            collection.findOneAndDelete(eq("_id", guild.getIdLong()));
-
-            GuildSettingsCache.removeCache(guild.getIdLong());
-            BlacklistCache.removeCache(guild.getIdLong());
-        }
-        catch (Exception exception)
-        {
-            monke.getLogger().error("A database error occurred", exception);
-        }
     }
 
 
@@ -108,7 +138,7 @@ public class DatabaseUtils
         }
         catch (Exception exception)
         {
-            monke.getLogger().error("A mongo error occurred", exception);
+            monke.getLogger().error("A mongodb error occurred", exception);
         }
     }
 
@@ -131,7 +161,7 @@ public class DatabaseUtils
         }
         catch (Exception exception)
         {
-            monke.getLogger().error("A mongo error occurred", exception);
+            monke.getLogger().error("A mongodb error occurred", exception);
         }
     }
 }
