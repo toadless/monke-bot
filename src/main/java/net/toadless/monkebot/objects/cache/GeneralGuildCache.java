@@ -41,7 +41,9 @@ public class GeneralGuildCache
         {
             cache = new GeneralGuildCache(guildId, monke);
             GUILD_CACHES.put(guildId, cache);
-            DatabaseUtils.syncGeneralGuild(guildId, monke);
+
+            DatabaseUtils.syncBlacklistedChannels(guildId, monke);
+            DatabaseUtils.syncBlacklistedPhrases(guildId, monke);
         }
         return cache;
     }

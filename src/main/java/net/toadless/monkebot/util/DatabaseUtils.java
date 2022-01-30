@@ -90,7 +90,7 @@ public class DatabaseUtils
     }
 
 
-    private static void syncBlacklistedPhrases(long guildId, Monke monke)
+    public static void syncBlacklistedPhrases(long guildId, Monke monke)
     {
         try
         {
@@ -113,7 +113,7 @@ public class DatabaseUtils
         }
     }
 
-    private static void syncBlacklistedChannels(long guildId, Monke monke)
+    public static void syncBlacklistedChannels(long guildId, Monke monke)
     {
         try
         {
@@ -134,11 +134,5 @@ public class DatabaseUtils
         {
             monke.getLogger().error("A mongo error occurred", exception);
         }
-    }
-
-    public static void syncGeneralGuild(long guildId, Monke monke)
-    {
-        syncBlacklistedChannels(guildId, monke);
-        syncBlacklistedPhrases(guildId, monke);
     }
 }
