@@ -152,7 +152,7 @@ public class Monke extends ListenerAdapter
 
         getTaskHandler().addRepeatingTask(() ->
         {
-            DatabaseUtils.getExpiredTempbans(this).forEach(tempban -> new Tempban(this, tempban.getUserId(), tempban.getGuildId()).remove());
+            DatabaseUtils.getExpiredTempbans(this).forEach(tempban -> Tempban.remove(tempban.getUserId(), this));
         }, TimeUnit.SECONDS, 15);
 
         getTaskHandler().addRepeatingTask(() -> switchStatus(event.getJDA()), TimeUnit.MINUTES, 2);
@@ -198,7 +198,7 @@ public class Monke extends ListenerAdapter
                 Activity.watching(BotInfo.getUserCount(manager) + StringUtils.plurify("  user", (int) BotInfo.getUserCount(manager))),
                 Activity.watching("the kids"),
                 Activity.listening("your commands"),
-                Activity.listening(getConfiguration().getString(ConfigOption.PREFIX) + "help"),
+                Activity.listening(Constants.DEFAULT_BOT_PREFIX + "help"),
                 Activity.playing("forknife!!!!"),
                 Activity.playing("with your feelings"),
                 Activity.competing("the race to 100 servers")

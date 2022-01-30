@@ -13,6 +13,7 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.GuildChannel;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.toadless.monkebot.Constants;
 import net.toadless.monkebot.Monke;
 import net.toadless.monkebot.objects.bot.ConfigOption;
 import net.toadless.monkebot.objects.cache.GuildSettingsCache;
@@ -118,7 +119,7 @@ public class CommandHandler
         }
         else
         {
-            prefix = monke.getConfiguration().getString(ConfigOption.PREFIX);
+            prefix = Constants.DEFAULT_BOT_PREFIX;
         }
 
         runCommand(prefix, messageContent, event);

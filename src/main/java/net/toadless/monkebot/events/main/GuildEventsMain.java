@@ -18,7 +18,6 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.toadless.monkebot.Constants;
 import net.toadless.monkebot.Monke;
 import net.toadless.monkebot.objects.bot.ConfigOption;
-import net.toadless.monkebot.objects.cache.BlacklistCache;
 import net.toadless.monkebot.objects.cache.GuildSettingsCache;
 import net.toadless.monkebot.objects.cache.MessageCache;
 import net.toadless.monkebot.objects.database.ReactionRole;
@@ -40,8 +39,6 @@ public class GuildEventsMain extends ListenerAdapter
         DatabaseUtils.removeGuild(event.getGuild(), monke);
         GuildSettingsCache.removeCache(event.getGuild().getIdLong());
         MessageCache.removeCache(event.getGuild().getIdLong());
-        BlacklistCache.removeCache(event.getGuild().getIdLong());
-
         String[] config = monke.getConfiguration().getString(ConfigOption.LOG_CHANNEL).split("(, *)");
 
         if (config.length < 2)
@@ -72,7 +69,6 @@ public class GuildEventsMain extends ListenerAdapter
         DatabaseUtils.removeGuild(event.getGuildIdLong(), monke);
         GuildSettingsCache.removeCache(event.getGuildIdLong());
         MessageCache.removeCache(event.getGuildIdLong());
-        BlacklistCache.removeCache(event.getGuildIdLong());
     }
 
     @Override

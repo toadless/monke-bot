@@ -3,9 +3,6 @@ package net.toadless.monkebot.commands.subcommands.warn;
 import java.util.List;
 import java.util.OptionalInt;
 import java.util.function.Consumer;
-import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.User;
 import net.toadless.monkebot.objects.command.Command;
 import net.toadless.monkebot.objects.command.CommandEvent;
 import net.toadless.monkebot.objects.command.CommandFlag;
@@ -13,11 +10,14 @@ import net.toadless.monkebot.objects.database.Warning;
 import net.toadless.monkebot.objects.exception.CommandException;
 import net.toadless.monkebot.objects.exception.CommandHierarchyException;
 import net.toadless.monkebot.objects.exception.CommandInputException;
-import net.toadless.monkebot.objects.pojos.Warnings;
 import net.toadless.monkebot.util.CommandChecks;
 import net.toadless.monkebot.util.CommandUtils;
 import net.toadless.monkebot.util.Parser;
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.User;
 import org.jetbrains.annotations.NotNull;
+import org.jooq.generated.tables.pojos.Warnings;
 
 public class WarnRemoveCommand extends Command
 {

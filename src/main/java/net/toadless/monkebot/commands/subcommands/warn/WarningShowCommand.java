@@ -2,9 +2,6 @@ package net.toadless.monkebot.commands.subcommands.warn;
 
 import java.util.List;
 import java.util.function.Consumer;
-import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.MessageChannel;
 import net.toadless.monkebot.Constants;
 import net.toadless.monkebot.objects.command.Command;
 import net.toadless.monkebot.objects.command.CommandEvent;
@@ -12,11 +9,14 @@ import net.toadless.monkebot.objects.command.CommandFlag;
 import net.toadless.monkebot.objects.database.Warning;
 import net.toadless.monkebot.objects.exception.CommandException;
 import net.toadless.monkebot.objects.exception.CommandInputException;
-import net.toadless.monkebot.objects.pojos.Warnings;
 import net.toadless.monkebot.util.CommandChecks;
 import net.toadless.monkebot.util.Parser;
 import net.toadless.monkebot.util.StringUtils;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.MessageChannel;
 import org.jetbrains.annotations.NotNull;
+import org.jooq.generated.tables.pojos.Warnings;
 
 public class WarningShowCommand extends Command
 {

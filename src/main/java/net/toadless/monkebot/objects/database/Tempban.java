@@ -1,73 +1,93 @@
 package net.toadless.monkebot.objects.database;
 
+import java.sql.Connection;
 import java.time.LocalDateTime;
-
+import java.util.ArrayList;
+import java.util.List;
 import net.toadless.monkebot.Monke;
-import net.toadless.monkebot.objects.cache.GuildSettingsCache;
-import net.toadless.monkebot.objects.pojos.Tempbans;
-import org.bson.Document;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Role;
+import org.jooq.generated.Tables;
+
+import static org.jooq.generated.tables.Roles.ROLES;
+import static org.jooq.generated.tables.Tempbans.TEMPBANS;
 
 public class Tempban
 {
-    public static final String collection = "tempbans";
-
-    private final Monke monke;
-    private final Long userId;
-    private final Long guildId;
-
-    public Tempban(Monke monke, Long userId, Long guildId)
+    private Tempban()
     {
-        this.monke = monke;
-        this.userId = userId;
-        this.guildId = guildId;
+        //Overrides the default, public, constructor
     }
 
-    public boolean remove()
+    public static boolean remove(long userId, Monke monke)
     {
-        try
+        try (Connection connection = monke.getDatabaseHandler().getConnection())
         {
-            var connection = monke.getDatabaseHandler().getConnection();
-            var database = connection.getDatabase(monke.getDatabaseHandler().getDatabase().getName());
-            var collection = database.getCollection(Tempban.collection, Tempbans.class);
-            var document = new Document("userId", userId).append("guildId", guildId);
-            var guilds = collection.find(document);
+            var ctx = monke.getDatabaseHandler().getContext(connection);
+            var existsQuery = ctx.selectFrom(Tables.TEMPBANS).where(TEMPBANS.USER_ID.eq(userId));
 
-            if (guilds.first() == null) return false;
-            collection.findOneAndDelete(document);
+            if (existsQuery.fetch().isEmpty())
+            {
+                return false;
+            }
+            var roles = ctx.selectFrom(Tables.ROLES).where(ROLES.USER_ID.eq(userId));
 
-            var guild = monke.getShardManager().getGuildById(guildId);
-            if (guild == null) return false;
+            List<Role> collectedRoles = new ArrayList<>();
+            Guild guild = null;
+            for (var row : roles.fetch())
+            {
+                guild = monke.getShardManager().getGuildById(row.getGuildId());
+                if (guild != null)
+                {
+                    Role role = guild.getRoleById(row.getRoleId());
+                    if (role != null)
+                    {
+                        if (!collectedRoles.contains(role))
+                        {
+                            collectedRoles.add(role);
+                        }
+                    }
+                }
+            }
 
-            var role = guild.getRoleById(GuildSettingsCache.getCache(guildId, monke).getTempBanRole());
-            if (role == null) return false;
-
-            guild.retrieveMemberById(userId).queue(member -> guild.removeRoleFromMember(member, role).queue());
+            if (guild != null)
+            {
+                Guild finalGuild = guild;
+                guild.retrieveMemberById(userId).queue(member -> finalGuild.modifyMemberRoles(member, collectedRoles).queue());
+            }
+            ctx.deleteFrom(Tables.TEMPBANS).where(TEMPBANS.USER_ID.eq(userId)).execute();
+            ctx.deleteFrom(Tables.ROLES).where(ROLES.USER_ID.eq(userId)).execute();
+            return true;
         }
         catch (Exception exception)
         {
-            monke.getLogger().error("A mongo error occurred", exception);
+            monke.getLogger().error("An SQL error occurred", exception);
             return false;
         }
-
-        return true;
     }
 
-    public boolean add(LocalDateTime mutedUntil)
+    public static boolean add(long memberId, List<Long> roleIds, Guild guild, LocalDateTime mutedUntil, Monke monke)
     {
-        try
+        try (Connection connection = monke.getDatabaseHandler().getConnection())
         {
-            var connection = monke.getDatabaseHandler().getConnection();
-            var database = connection.getDatabase(monke.getDatabaseHandler().getDatabase().getName());
-            var collection = database.getCollection(Tempban.collection, Tempbans.class);
-            var document = new Document("userId", userId).append("guildId", guildId).append("mutedUntil", mutedUntil);
-            var guilds = collection.find(document);
+            var ctx = monke.getDatabaseHandler().getContext(connection);
 
-            if (guilds.first() != null) return false;
-            collection.insertOne(new Tempbans(userId, guildId, mutedUntil));
+            boolean exists = ctx.select(TEMPBANS.USER_ID).from(Tables.TEMPBANS).fetchOne() != null;
+            if (exists)
+            {
+                return false;
+            }
+
+            for (long roleId : roleIds)
+            {
+                ctx.insertInto(Tables.ROLES).columns(ROLES.GUILD_ID, ROLES.USER_ID, ROLES.ROLE_ID).values(guild.getIdLong(), memberId, roleId).execute();
+            }
+            ctx.insertInto(Tables.TEMPBANS).columns(TEMPBANS.GUILD_ID, TEMPBANS.USER_ID, TEMPBANS.MUTED_UNTIL).values(guild.getIdLong(), memberId, mutedUntil).execute();
+
         }
         catch (Exception exception)
         {
-            monke.getLogger().error("A mongo error occurred", exception);
+            monke.getLogger().error("An SQL error occurred", exception);
             return false;
         }
         return true;

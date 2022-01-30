@@ -1,24 +1,19 @@
 package net.toadless.monkebot.objects.database;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
+import net.toadless.monkebot.Monke;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
-import net.toadless.monkebot.Monke;
-import net.toadless.monkebot.objects.pojos.ReactionRoles;
-import org.bson.Document;
 import org.jetbrains.annotations.NotNull;
 
-import static com.mongodb.client.model.Filters.and;
-import static com.mongodb.client.model.Filters.eq;
+import static org.jooq.generated.tables.ReactionRoles.REACTION_ROLES;
 
 public class ReactionRole
 {
-    private static final String collection = "reactionroles";
-
     private final long messageId;
     private final long roleId;
     private final String emote;
@@ -36,15 +31,17 @@ public class ReactionRole
 
     public static @NotNull List<ReactionRole> getByMessageId(long messageId, @NotNull Monke monke)
     {
-        try
+        try (Connection connection = monke.getDatabaseHandler().getConnection())
         {
-            var connection = monke.getDatabaseHandler().getConnection();
-            var database = connection.getDatabase(monke.getDatabaseHandler().getDatabase().getName());
-            var collection = database.getCollection(ReactionRole.collection, ReactionRoles.class);
-            var filter = and(eq("messageId", messageId));
-            var result = collection.find(filter);
+            var context = monke.getDatabaseHandler().getContext(connection);
+            var query = context
+                    .selectFrom(REACTION_ROLES)
+                    .where(REACTION_ROLES.MESSAGE_ID.eq(messageId));
 
-            if (result.first() == null)
+            var result = query.fetch();
+            query.close();
+
+            if (result.isEmpty())
             {
                 return Collections.emptyList();
             }
@@ -60,26 +57,25 @@ public class ReactionRole
         }
         catch (Exception exception)
         {
-            monke.getLogger().error("A mongo error occurred", exception);
+            monke.getLogger().error("An SQL error occurred", exception);
             return Collections.emptyList();
         }
     }
 
     public void add()
     {
-        try
+        try (Connection connection = monke.getDatabaseHandler().getConnection())
         {
-            var connection = monke.getDatabaseHandler().getConnection();
-            var database = connection.getDatabase(monke.getDatabaseHandler().getDatabase().getName());
-            var collection = database.getCollection(ReactionRole.collection, ReactionRoles.class);
-            var document = new Document("messageId", messageId).append("roleId", roleId).append("guildId", guildId).append("emoteId", emote);
-            var guilds = collection.find(document);
-
-            if (guilds.first() == null) collection.insertOne(new ReactionRoles(messageId, guildId, emote, roleId));
+            var context = monke.getDatabaseHandler().getContext(connection);
+            var query = context
+                    .insertInto(REACTION_ROLES)
+                    .columns(REACTION_ROLES.GUILD_ID, REACTION_ROLES.MESSAGE_ID, REACTION_ROLES.ROLE_ID, REACTION_ROLES.EMOTE_ID)
+                    .values(guildId, messageId, roleId, emote);
+            query.execute();
         }
         catch (Exception exception)
         {
-            monke.getLogger().error("A mongo error occurred", exception);
+            monke.getLogger().error("An SQL error occurred", exception);
         }
     }
 
@@ -131,42 +127,36 @@ public class ReactionRole
 
     public void remove()
     {
-        try
+        try (Connection connection = monke.getDatabaseHandler().getConnection())
         {
-            try
-            {
-                var connection = monke.getDatabaseHandler().getConnection();
-                var database = connection.getDatabase(monke.getDatabaseHandler().getDatabase().getName());
-                var collection = database.getCollection(ReactionRole.collection, ReactionRoles.class);
-                var document = new Document("messageId", messageId).append("roleId", roleId).append("guildId", guildId).append("emoteId", emote);
-
-                collection.findOneAndDelete(document);
-            }
-            catch (Exception exception)
-            {
-                monke.getLogger().error("A mongo error occurred", exception);
-            }
+            var context = monke.getDatabaseHandler().getContext(connection);
+            var query = context
+                    .deleteFrom(REACTION_ROLES)
+                    .where(REACTION_ROLES.MESSAGE_ID.eq(messageId).and(REACTION_ROLES.ROLE_ID.eq(roleId)).and(REACTION_ROLES.EMOTE_ID.eq(emote)));
+            query.execute();
         }
         catch (Exception exception)
         {
-            monke.getLogger().error("A mongo error occurred", exception);
+            monke.getLogger().error("An SQL error occurred", exception);
         }
     }
 
     public boolean isPresent()
     {
-        try
+        try (Connection connection = monke.getDatabaseHandler().getConnection())
         {
-            var connection = monke.getDatabaseHandler().getConnection();
-            var database = connection.getDatabase(monke.getDatabaseHandler().getDatabase().getName());
-            var collection = database.getCollection(ReactionRole.collection, ReactionRoles.class);
-            var document = new Document("messageId", messageId).append("roleId", roleId).append("guildId", guildId).append("emoteId", emote);
-            var guilds = collection.find(document);
-            return !(guilds.first() == null);
+            var context = monke.getDatabaseHandler().getContext(connection);
+            var query = context
+                    .selectFrom(REACTION_ROLES)
+                    .where(REACTION_ROLES.MESSAGE_ID.eq(messageId).and(REACTION_ROLES.EMOTE_ID.eq(emote)).and(REACTION_ROLES.ROLE_ID.eq(roleId)));
+
+            var result = query.fetch();
+            query.close();
+            return !result.isEmpty();
         }
         catch (Exception exception)
         {
-            monke.getLogger().error("A mongo error occurred", exception);
+            monke.getLogger().error("An SQL error occurred", exception);
             return false;
         }
     }

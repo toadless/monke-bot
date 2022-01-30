@@ -1,23 +1,19 @@
 package net.toadless.monkebot.util;
 
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
+import net.toadless.monkebot.Monke;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
-import net.toadless.monkebot.Monke;
-import net.toadless.monkebot.objects.cache.BlacklistCache;
-import net.toadless.monkebot.objects.pojos.ChannelBlacklists;
-import net.toadless.monkebot.objects.pojos.WordBlacklists;
-import org.bson.Document;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.jooq.generated.Tables;
+import org.jooq.generated.tables.ChannelBlacklists;
+import org.jooq.generated.tables.WordBlacklists;
 
 public class BlacklistUtils
 {
-    public static final String channelCollection = "channelblacklists";
-    public static final String wordCollection = "wordblacklists";
-
     public static final List<String> LINKS = List.copyOf(List.of("youtube.com", "twitch.tv", "youtu.be", "https://", "http://", "www."));
     public static final List<String> DISCORD = List.copyOf(List.of("discord.gg/"));
 
@@ -47,118 +43,153 @@ public class BlacklistUtils
 
     public static boolean isChannelBlacklisted(MessageReceivedEvent event, Monke monke)
     {
-        return BlacklistCache.getCache(event.getGuild().getIdLong(), monke).getBlacklistedChannels().contains(event.getChannel());
+        if (!event.isFromGuild())
+        {
+            return false;
+        }
+
+        try (Connection connection = monke.getDatabaseHandler().getConnection())
+        {
+            var context = monke.getDatabaseHandler().getContext(connection);
+            var query = context
+                    .selectFrom(Tables.CHANNEL_BLACKLISTS)
+                    .where(ChannelBlacklists.CHANNEL_BLACKLISTS.CHANNEL_ID.eq(event.getChannel().getIdLong())
+                            .and(ChannelBlacklists.CHANNEL_BLACKLISTS.GUILD_ID.eq(event.getGuild().getIdLong())));
+
+            return query.execute() > 0;
+        }
+        catch (Exception exception)
+        {
+            monke.getLogger().error("An SQL error occurred", exception);
+            return false;
+        }
     }
 
     public static List<String> getBlacklistedPhrases(Guild guild, Monke monke)
     {
-        return BlacklistCache.getCache(guild.getIdLong(), monke).getBlacklistedPhrases();
+        List<String> result = new ArrayList<>();
+        try (Connection connection = monke.getDatabaseHandler().getConnection())
+        {
+            var context = monke.getDatabaseHandler().getContext(connection);
+            var query = context
+                    .selectFrom(Tables.WORD_BLACKLISTS)
+                    .where(WordBlacklists.WORD_BLACKLISTS.GUILD_ID.eq(guild.getIdLong()));
+
+            for (var row : query.fetch())
+            {
+                result.add(row.getPhrase());
+            }
+        }
+        catch (Exception exception)
+        {
+            monke.getLogger().error("An SQL error occurred", exception);
+        }
+        return result;
     }
 
     public static void addPhrase(Guild guild, String phrase, Monke monke)
     {
-        try
+        try (Connection connection = monke.getDatabaseHandler().getConnection())
         {
-            var connection = monke.getDatabaseHandler().getConnection();
-            var database = connection.getDatabase(monke.getDatabaseHandler().getDatabase().getName());
-            var collection = database.getCollection(BlacklistUtils.wordCollection, WordBlacklists.class);
+            var context = monke.getDatabaseHandler().getContext(connection);
+            var query = context
+                    .insertInto(Tables.WORD_BLACKLISTS)
+                    .columns(WordBlacklists.WORD_BLACKLISTS.GUILD_ID, WordBlacklists.WORD_BLACKLISTS.PHRASE)
+                    .values(guild.getIdLong(), phrase);
 
-            collection.insertOne(new WordBlacklists(
-                    guild.getIdLong(),
-                    phrase
-            ));
-
-            BlacklistCache.getCache(guild.getIdLong(), monke).addBlacklistedPhrase(phrase);
+            query.execute();
         }
         catch (Exception exception)
         {
-            monke.getLogger().error("A mongo error occurred", exception);
+            monke.getLogger().error("An SQL error occurred", exception);
         }
     }
 
     public static boolean addChannel(MessageChannel channel, Guild guild, Monke monke)
     {
-        try
+        try (Connection connection = monke.getDatabaseHandler().getConnection())
         {
-            var connection = monke.getDatabaseHandler().getConnection();
-            var database = connection.getDatabase(monke.getDatabaseHandler().getDatabase().getName());
-            var collection = database.getCollection(BlacklistUtils.channelCollection, ChannelBlacklists.class);
-            var document = new Document("guildId", guild.getIdLong()).append("channelId", channel.getIdLong());
-            var exists = collection.find(document);
+            var context = monke.getDatabaseHandler().getContext(connection);
+            var query = context
+                    .insertInto(Tables.CHANNEL_BLACKLISTS)
+                    .columns(ChannelBlacklists.CHANNEL_BLACKLISTS.GUILD_ID, ChannelBlacklists.CHANNEL_BLACKLISTS.CHANNEL_ID)
+                    .values(guild.getIdLong(), channel.getIdLong());
 
-            if (exists.first() != null)
+            var exists = context
+                    .selectFrom(Tables.CHANNEL_BLACKLISTS)
+                    .where(ChannelBlacklists.CHANNEL_BLACKLISTS.GUILD_ID.eq(guild.getIdLong())
+                            .and(ChannelBlacklists.CHANNEL_BLACKLISTS.CHANNEL_ID.eq(channel.getIdLong())));
+
+            if (exists.fetch().isNotEmpty())
             {
                 return false;
             }
 
-            collection.insertOne(new ChannelBlacklists(
-                    guild.getIdLong(),
-                    channel.getIdLong()
-            ));
-
-            BlacklistCache.getCache(guild.getIdLong(), monke).addBlacklistedChannel(channel);
-
+            query.execute();
             return true;
         }
         catch (Exception exception)
         {
-            monke.getLogger().error("A mongo error occurred", exception);
+            monke.getLogger().error("An SQL error occurred", exception);
             return false;
         }
     }
 
-    public static List<ChannelBlacklists> getBlacklistedChannels(Guild guild, Monke monke)
+    public static List<org.jooq.generated.tables.pojos.ChannelBlacklists> getBlacklistedChannels(Guild guild, Monke monke)
     {
-        List<ChannelBlacklists> result = new ArrayList<>();
-        List<MessageChannel> blacklistedChannels = BlacklistCache.getCache(guild.getIdLong(), monke).getBlacklistedChannels();
-
-        for (var row : blacklistedChannels)
+        List<org.jooq.generated.tables.pojos.ChannelBlacklists> result = new ArrayList<>();
+        try (Connection connection = monke.getDatabaseHandler().getConnection())
         {
-            result.add(new ChannelBlacklists(guild.getIdLong(), row.getIdLong()));
-        }
+            var context = monke.getDatabaseHandler().getContext(connection);
+            var query = context
+                    .selectFrom(ChannelBlacklists.CHANNEL_BLACKLISTS)
+                    .where(ChannelBlacklists.CHANNEL_BLACKLISTS.GUILD_ID.eq(guild.getIdLong()));
 
+            for (var row : query.fetch())
+            {
+                result.add(new org.jooq.generated.tables.pojos.ChannelBlacklists(row.getId(), row.getGuildId(), row.getChannelId()));
+            }
+        }
+        catch (Exception exception)
+        {
+            monke.getLogger().error("An SQL error occurred", exception);
+        }
         return result;
     }
 
     public static boolean removeChannel(MessageChannel channel, Guild guild, Monke monke)
     {
-        try
+        try (Connection connection = monke.getDatabaseHandler().getConnection())
         {
-            var connection = monke.getDatabaseHandler().getConnection();
-            var database = connection.getDatabase(monke.getDatabaseHandler().getDatabase().getName());
-            var collection = database.getCollection(BlacklistUtils.channelCollection, ChannelBlacklists.class);
-            var document = new Document("guildId", guild.getIdLong()).append("channelId", channel.getIdLong());
-            var delete = collection.deleteOne(document);
+            var context = monke.getDatabaseHandler().getContext(connection);
+            var query = context
+                    .deleteFrom(Tables.CHANNEL_BLACKLISTS)
+                    .where(ChannelBlacklists.CHANNEL_BLACKLISTS.GUILD_ID.eq(guild.getIdLong())
+                            .and(ChannelBlacklists.CHANNEL_BLACKLISTS.CHANNEL_ID.eq(channel.getIdLong())));
 
-            BlacklistCache.getCache(guild.getIdLong(), monke).removeBlacklistedChannel(channel);
-
-            return delete.wasAcknowledged();
+            return query.execute() > 0;
         }
         catch (Exception exception)
         {
-            monke.getLogger().error("A mongo error occurred", exception);
+            monke.getLogger().error("An SQL error occurred", exception);
             return false;
         }
     }
 
-
     public static boolean removePhrase(Guild guild, String phrase, Monke monke)
     {
-        try
+        try (Connection connection = monke.getDatabaseHandler().getConnection())
         {
-            var connection = monke.getDatabaseHandler().getConnection();
-            var database = connection.getDatabase(monke.getDatabaseHandler().getDatabase().getName());
-            var collection = database.getCollection(BlacklistUtils.wordCollection, WordBlacklists.class);
-            var document = new Document("guildId", guild.getIdLong()).append("phrase", phrase);
-            var delete = collection.deleteOne(document);
+            var context = monke.getDatabaseHandler().getContext(connection);
+            var query = context
+                    .deleteFrom(Tables.WORD_BLACKLISTS)
+                    .where(WordBlacklists.WORD_BLACKLISTS.GUILD_ID.eq(guild.getIdLong()).and(WordBlacklists.WORD_BLACKLISTS.PHRASE.eq(phrase)));
 
-            BlacklistCache.getCache(guild.getIdLong(), monke).removeBlacklistedPhrase(phrase);
-
-            return delete.wasAcknowledged();
+            return query.execute() > 0;
         }
         catch (Exception exception)
         {
-            monke.getLogger().error("A mongo error occurred", exception);
+            monke.getLogger().error("An SQL error occurred", exception);
             return false;
         }
     }

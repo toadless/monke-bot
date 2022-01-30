@@ -5,12 +5,12 @@ import java.util.function.Consumer;
 import net.toadless.monkebot.objects.command.Command;
 import net.toadless.monkebot.objects.command.CommandEvent;
 import net.toadless.monkebot.objects.exception.CommandException;
-import net.toadless.monkebot.objects.pojos.ChannelBlacklists;
 import net.toadless.monkebot.util.BlacklistUtils;
 import net.toadless.monkebot.util.StringUtils;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import org.jetbrains.annotations.NotNull;
+import org.jooq.generated.tables.pojos.ChannelBlacklists;
 
 public class ChannelShowCommand extends Command
 {

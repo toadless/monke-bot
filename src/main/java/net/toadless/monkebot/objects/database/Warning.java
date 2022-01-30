@@ -1,19 +1,18 @@
 package net.toadless.monkebot.objects.database;
 
-import java.time.LocalDateTime;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
-
+import net.toadless.monkebot.Monke;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.User;
-import net.toadless.monkebot.Monke;
-import net.toadless.monkebot.objects.pojos.Warnings;
-import org.bson.Document;
+import org.jooq.generated.Tables;
+import org.jooq.generated.tables.pojos.Warnings;
+
+import static org.jooq.generated.tables.Warnings.WARNINGS;
 
 public class Warning
 {
-    private static final String collection = "warns";
-
     private final long userId;
     private final long guildId;
     private final Monke monke;
@@ -27,58 +26,40 @@ public class Warning
 
     public void add(String reason)
     {
-        try
+        try (Connection connection = monke.getDatabaseHandler().getConnection())
         {
-            var connection = monke.getDatabaseHandler().getConnection();
-            var database = connection.getDatabase(monke.getDatabaseHandler().getDatabase().getName());
-            var collection = database.getCollection(Warning.collection, Warnings.class);
-            var document = new Document("guildId", guildId).append("userId", userId);
-            var result = collection.countDocuments(document);
-
-            collection.insertOne(new Warnings(
-                    result+1,
-                    guildId,
-                    userId,
-                    LocalDateTime.now(),
-                    reason
-            ));
+            var context = monke.getDatabaseHandler().getContext(connection);
+            var query = context.insertInto(Tables.WARNINGS).columns(WARNINGS.GUILD_ID, WARNINGS.USER_ID, WARNINGS.WARN_TEXT).values(guildId, userId, reason);
+            query.execute();
         }
         catch (Exception exception)
         {
-            monke.getLogger().error("A mongo error occurred", exception);
+            monke.getLogger().error("An SQL error occurred", exception);
         }
     }
 
-
     public void remove(long key)
     {
-        try
+        try (Connection connection = monke.getDatabaseHandler().getConnection())
         {
-            var connection = monke.getDatabaseHandler().getConnection();
-            var database = connection.getDatabase(monke.getDatabaseHandler().getDatabase().getName());
-            var collection = database.getCollection(Warning.collection, Warnings.class);
-            var document = new Document("guildId", guildId).append("userId", userId).append("_id", key);
-
-            collection.findOneAndDelete(document);
+            var context = monke.getDatabaseHandler().getContext(connection);
+            context.deleteFrom(Tables.WARNINGS).where(WARNINGS.ID.eq(key)).execute();
         }
         catch (Exception exception)
         {
-            monke.getLogger().error("A mongo error occurred", exception);
+            monke.getLogger().error("An SQL error occurred", exception);
         }
     }
 
     public List<Warnings> get()
     {
         List<Warnings> result = new ArrayList<>();
-        try
+        try (Connection connection = monke.getDatabaseHandler().getConnection())
         {
-            var connection = monke.getDatabaseHandler().getConnection();
-            var database = connection.getDatabase(monke.getDatabaseHandler().getDatabase().getName());
-            var collection = database.getCollection(Warning.collection, Warnings.class);
-            var document = new Document("guildId", guildId).append("userId", userId);
-            var query = collection.find(document);
+            var context = monke.getDatabaseHandler().getContext(connection);
+            var query = context.selectFrom(Tables.WARNINGS).where(WARNINGS.GUILD_ID.eq(guildId)).and(WARNINGS.USER_ID.eq(userId));
 
-            for (var value : query)
+            for (var value : query.fetch())
             {
                 result.add(new Warnings(value.getId(), value.getUserId(), value.getGuildId(), value.getTimestamp(), value.getWarnText()));
             }
@@ -86,7 +67,7 @@ public class Warning
         }
         catch (Exception exception)
         {
-            monke.getLogger().error("A mongo error occurred", exception);
+            monke.getLogger().error("An SQL error occurred", exception);
         }
 
         return result;
@@ -94,17 +75,17 @@ public class Warning
 
     public Warnings getByWarnId(long warnId)
     {
-        try
+        try (Connection connection = monke.getDatabaseHandler().getConnection())
         {
-            var connection = monke.getDatabaseHandler().getConnection();
-            var database = connection.getDatabase(monke.getDatabaseHandler().getDatabase().getName());
-            var collection = database.getCollection(Warning.collection, Warnings.class);
-            var document = new Document("guildId", guildId).append("userId", userId).append("_id", warnId);
-            var result = collection.find(document).first();
+            var context = monke.getDatabaseHandler().getContext(connection)
+                    .selectFrom(WARNINGS)
+                    .where(WARNINGS.ID.eq(warnId));
 
-            if (result != null)
+            var result = context.fetch();
+            context.close();
+            if (!result.isEmpty())
             {
-                var warn = result;
+                var warn = result.get(0);
                 return new Warnings(warn.getId(), warn.getUserId(), warn.getGuildId(), warn.getTimestamp(), warn.getWarnText());
             }
             else
@@ -114,7 +95,7 @@ public class Warning
         }
         catch (Exception exception)
         {
-            monke.getLogger().error("A mongo error occurred", exception);
+            monke.getLogger().error("An SQL error occurred", exception);
             return null;
         }
     }

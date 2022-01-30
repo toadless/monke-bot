@@ -1,23 +1,21 @@
 package net.toadless.monkebot.objects.cache;
 
+import java.sql.Connection;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-
+import net.toadless.monkebot.Monke;
 import net.jodah.expiringmap.ExpirationPolicy;
 import net.jodah.expiringmap.ExpiringMap;
-import net.toadless.monkebot.Monke;
-import net.toadless.monkebot.objects.bot.ConfigOption;
-import org.bson.Document;
 import org.jetbrains.annotations.NotNull;
+import org.jooq.Field;
 
-import static com.mongodb.client.model.Filters.eq;
+import static org.jooq.generated.tables.Guilds.GUILDS;
 
 public class GuildSettingsCache implements ICache<String, CachedGuildSetting>
 {
     private static final Map<Long, GuildSettingsCache> GUILD_CACHES = new ConcurrentHashMap<>();
-    public static final String collection = "guilds";
 
     private final Map<String, CachedGuildSetting> cachedValues;
 
@@ -31,11 +29,11 @@ public class GuildSettingsCache implements ICache<String, CachedGuildSetting>
         this.cachedValues = ExpiringMap.builder()
                 .maxSize(50)
                 .expirationPolicy(ExpirationPolicy.ACCESSED)
-                .expiration(30, TimeUnit.MINUTES)
+                .expiration(1, TimeUnit.HOURS)
                 .build();
     }
 
-    public static @NotNull GuildSettingsCache getCache(long  guildId, Monke monke)
+    public static @NotNull GuildSettingsCache getCache(long guildId, Monke monke)
     {
         GuildSettingsCache cache = GUILD_CACHES.get(guildId);
         if (GUILD_CACHES.get(guildId) == null)
@@ -107,71 +105,66 @@ public class GuildSettingsCache implements ICache<String, CachedGuildSetting>
 
     public long getLogChannel()
     {
-        return cacheGetLong("logchannel", -1L);
+        return cacheGetLong("logchannel", GUILDS.LOG_CHANNEL);
     }
 
-    public void setLogChannel(long newChannel)
+    public void setLogChannel(@NotNull long newLogChannel)
     {
-        cachePut("logchannel", newChannel);
-    }
-
-    public long getTempBanRole()
-    {
-        return cacheGetLong("tempbanrole", -1L);
-    }
-
-    public void setTempBanRole(long newRole)
-    {
-        cachePut("tempbanrole", newRole);
-    }
-
-    public @NotNull String getPrefix()
-    {
-        return cacheGetString("prefix", monke.getConfiguration().getString(ConfigOption.PREFIX));
-    }
-
-    public void setPrefix(@NotNull String newPrefix)
-    {
-        cachePut("prefix", newPrefix);
+        cachePut("logchannel", GUILDS.LOG_CHANNEL, newLogChannel);
     }
 
     public long getReportChannel()
     {
-        return cacheGetLong("reportchannel", -1L);
+        return cacheGetLong("reportchannel", GUILDS.REPORT_CHANNEL);
     }
 
-    public void setReportChannel(long newChannel)
+    public long getWelcomeChannel()
     {
-        cachePut("reportchannel", newChannel);
+        return cacheGetLong("welcomechannel", GUILDS.WELCOME_CHANNEL);
     }
 
-    @SuppressWarnings("unchecked")
-    private <T> T getField(String field, T value)
+    public long getTempBanRole()
     {
-        try
+        return cacheGetLong("tempbanrole", GUILDS.MUTED_ROLE);
+    }
+
+    public void setTempBanRole(@NotNull long newTempBanRole)
+    {
+        cachePut("tempbanrole", GUILDS.MUTED_ROLE, newTempBanRole);
+    }
+
+    public @NotNull String getPrefix()
+    {
+        return cacheGetString("prefix", GUILDS.PREFIX);
+    }
+
+    public void setPrefix(@NotNull String newPrefix)
+    {
+        cachePut("prefix", GUILDS.PREFIX, newPrefix);
+    }
+
+    private <T> T getField(Field<T> field)
+    {
+        try (Connection connection = monke.getDatabaseHandler().getConnection())
         {
-            var connection = monke.getDatabaseHandler().getConnection();
-            var database = connection.getDatabase(monke.getDatabaseHandler().getDatabase().getName());
-            var collection = database.getCollection(GuildSettingsCache.collection);
-            var guilds = collection.find(new Document("_id", guildId));
-
-            if (guilds.first() == null) { collection.insertOne(new Document("_id", guildId).append(field, value)); return value; }
-            else if (guilds.first().get(field) == null) { setField(field, value); return value; }
-
-            return (T) guilds.first().get(field);
+            var context = monke.getDatabaseHandler().getContext(connection);
+            var query = context.select(field).from(GUILDS).where(GUILDS.GUILD_ID.eq(guildId));
+            T result = query.fetchOne(field);
+            query.close();
+            return result;
         }
         catch (Exception exception)
         {
-            monke.getLogger().error("A database error occurred", exception);
+            monke.getLogger().error("An SQL error occurred", exception);
             return null;
         }
     }
 
-    private <T> long cacheGetLong(String label, T value)
+    private long cacheGetLong(String label, Field<Long> field)
     {
         if (cachedValues.get(label) == null)
         {
-            cachedValues.put(label, new CachedGuildSetting(label, String.valueOf(getField(label, value))));
+            cachedValues.put(label, new CachedGuildSetting(label, String.valueOf(getField(field))));
         }
         try
         {
@@ -183,37 +176,32 @@ public class GuildSettingsCache implements ICache<String, CachedGuildSetting>
         }
     }
 
-    private <T> @NotNull String cacheGetString(String label, T value)
+    private @NotNull String cacheGetString(String label, Field<String> field)
     {
         if (cachedValues.get(label) == null)
         {
-            cachedValues.put(label, new CachedGuildSetting(label, String.valueOf(getField(label, value))));
+            cachedValues.put(label, new CachedGuildSetting(label, String.valueOf(getField(field))));
         }
         return cachedValues.get(label).getValue();
     }
 
-    private <T> void cachePut(String label, T newValue)
+    private <T> void cachePut(String label, Field<T> field, T newValue)
     {
         update(label, new CachedGuildSetting(label, String.valueOf(newValue)));
-        setField(label, newValue);
+        setField(field, newValue);
     }
 
 
-    private <T> void setField(String field, T value)
+    private <T> void setField(Field<T> field, T value)
     {
-        try
+        try (Connection connection = monke.getDatabaseHandler().getConnection())
         {
-            var connection = monke.getDatabaseHandler().getConnection();
-            var database = connection.getDatabase(monke.getDatabaseHandler().getDatabase().getName());
-            var collection = database.getCollection(GuildSettingsCache.collection);
-            var guilds = collection.find(new Document("_id", guildId));
-
-            if (guilds.first() == null) collection.insertOne(new Document("_id", guildId).append(field, value));
-            else collection.updateOne(eq("_id", guildId), new Document("$set", new Document(field, String.valueOf(value))));
+            var context = monke.getDatabaseHandler().getContext(connection);
+            context.update(GUILDS).set(field, value).where(GUILDS.GUILD_ID.eq(guildId)).execute();
         }
         catch (Exception exception)
         {
-            monke.getLogger().error("A database error occurred", exception);
+            monke.getLogger().error("An SQL error occurred", exception);
         }
     }
 }

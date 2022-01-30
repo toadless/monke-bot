@@ -80,11 +80,9 @@ public class PrefixCommand extends Command
         @Override
         public void run(@NotNull List<String> args, @NotNull CommandEvent event, @NotNull Consumer<CommandException> failure)
         {
-            String newPrefix = event.getMonke().getConfiguration().getString(ConfigOption.PREFIX);
-
             GuildSettingsCache config = GuildSettingsCache.getCache(event.getGuildIdLong(), event.getMonke());
-            event.replySuccess("Reset my prefix to `" + newPrefix + "`");
-            config.setPrefix(newPrefix);
+            event.replySuccess("Reset my prefix to `" + Constants.DEFAULT_BOT_PREFIX + "`");
+            config.setPrefix(Constants.DEFAULT_BOT_PREFIX);
         }
     }
 }

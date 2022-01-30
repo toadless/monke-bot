@@ -40,7 +40,7 @@ public class WebHandler
                     path("/health", () -> get(ctx -> ctx.result("Healthy")));
 
                     path("/modify", () -> get(new ModifyRoute(this)));
-                }).start(Integer.parseInt(monke.getConfiguration().getString(ConfigOption.PORT)));
+                }).start(4444);
     }
 
     public Monke getMonke()

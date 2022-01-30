@@ -44,7 +44,7 @@ public class CommandEvent
     {
         if (!isFromGuild())
         {
-            return monke.getConfiguration().getString(ConfigOption.PREFIX);
+            return Constants.DEFAULT_BOT_PREFIX;
         }
         else
         {

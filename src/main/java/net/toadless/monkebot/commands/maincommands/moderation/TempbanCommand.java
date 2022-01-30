@@ -74,7 +74,7 @@ public class TempbanCommand extends Command
                                 guild.modifyMemberRoles(member, tempBanRole).queue(
                                         success ->
                                         {
-                                            if (new Tempban(event.getMonke(), user.getIdLong(), guild.getIdLong()).add(muteTime))
+                                            if (Tempban.add(member.getIdLong(), roleIds, guild, muteTime, event.getMonke()))
                                             {
                                                 event.replySuccess("Tempbanned " + user.getAsMention() + " until " + StringUtils.parseDateTime(muteTime));
                                             }
@@ -123,7 +123,7 @@ public class TempbanCommand extends Command
                         CommandUtils.interactionCheck(author, user, event, () ->
                                 UserUtils.getMemberFromUser(user, guild).queue(member ->
                                 {
-                                    if (new Tempban(event.getMonke(), user.getIdLong(), guild.getIdLong()).remove())
+                                    if (Tempban.remove(member.getIdLong(), event.getMonke()))
                                     {
                                         event.replySuccess("Removed tempban for user " + StringUtils.getUserAsMention(member.getIdLong()));
                                     }

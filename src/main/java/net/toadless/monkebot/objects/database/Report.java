@@ -1,15 +1,13 @@
 package net.toadless.monkebot.objects.database;
 
+import java.sql.Connection;
 import net.toadless.monkebot.Monke;
-import net.toadless.monkebot.objects.pojos.Reports;
-import org.bson.Document;
+import org.jooq.generated.Tables;
 
-import java.time.LocalDateTime;
+import static org.jooq.generated.tables.Reports.REPORTS;
 
 public class Report
 {
-    private static final String collection = "reports";
-
     private final long messageId;
     private final long commandMessageId;
     private final long channelId;
@@ -33,17 +31,16 @@ public class Report
 
     public static Report getById(long messageId, Monke monke)
     {
-        try
+        try (Connection connection = monke.getDatabaseHandler().getConnection())
         {
-            var connection = monke.getDatabaseHandler().getConnection();
-            var database = connection.getDatabase(monke.getDatabaseHandler().getDatabase().getName());
-            var collection = database.getCollection(Report.collection, Reports.class);
-            var document = new Document("messageId", messageId);
-            var result = collection.find(document);
+            var context = monke.getDatabaseHandler().getContext(connection);
+            var query = context.selectFrom(REPORTS).where(REPORTS.MESSAGE_ID.eq(messageId));
+            var result = query.fetch();
+            query.close();
 
-            if (result.first() != null)
+            if (!result.isEmpty())
             {
-                var report = result.first();
+                var report = result.get(0);
                 return new Report(report.getMessageId(), report.getReportMessageId(), report.getChannelId(), report.getGuildId(), report.getReporterId(), report.getReportteeId(), report.getReportText(), monke);
             }
             else
@@ -53,51 +50,38 @@ public class Report
         }
         catch (Exception exception)
         {
-            monke.getLogger().error("A mongo error occurred", exception);
+            monke.getLogger().error("An SQL error occurred", exception);
             return null;
         }
     }
 
     public static void add(long messageId, long commandMessageId, long channelId, long guildId, long reportedUserId, long reportingUserId, String reason, Monke monke)
     {
-        try
+        try (Connection connection = monke.getDatabaseHandler().getConnection())
         {
-            var connection = monke.getDatabaseHandler().getConnection();
-            var database = connection.getDatabase(monke.getDatabaseHandler().getDatabase().getName());
-            var collection = database.getCollection(Report.collection, Reports.class);
+            var ctx = monke.getDatabaseHandler().getContext(connection);
 
-            collection.insertOne(new Reports(
-                    messageId,
-                    commandMessageId,
-                    channelId,
-                    guildId,
-                    reportingUserId,
-                    reportedUserId,
-                    LocalDateTime.now(),
-                    reason
-            ));
+            ctx.insertInto(REPORTS)
+                    .columns(REPORTS.MESSAGE_ID, REPORTS.REPORT_MESSAGE_ID, REPORTS.CHANNEL_ID, REPORTS.GUILD_ID, REPORTS.REPORTER_ID, REPORTS.REPORTTEE_ID, REPORTS.REPORT_TEXT)
+                    .values(messageId, commandMessageId, channelId, guildId, reportedUserId, reportingUserId, reason)
+                    .execute();
         }
         catch (Exception exception)
         {
-            monke.getLogger().error("A mongo error occurred", exception);
+            monke.getLogger().error("An SQL error occurred", exception);
         }
     }
 
-
     public static void remove(long messageId, Monke monke)
     {
-        try
+        try (Connection connection = monke.getDatabaseHandler().getConnection())
         {
-            var connection = monke.getDatabaseHandler().getConnection();
-            var database = connection.getDatabase(monke.getDatabaseHandler().getDatabase().getName());
-            var collection = database.getCollection(Report.collection, Reports.class);
-            var document = new Document("messageId", messageId);
-
-            collection.findOneAndDelete(document);
+            var context = monke.getDatabaseHandler().getContext(connection);
+            context.deleteFrom(Tables.REPORTS).where(REPORTS.MESSAGE_ID.eq(messageId)).execute();
         }
         catch (Exception exception)
         {
-            monke.getLogger().error("A mongo error occurred", exception);
+            monke.getLogger().error("An SQL error occurred", exception);
         }
     }
 

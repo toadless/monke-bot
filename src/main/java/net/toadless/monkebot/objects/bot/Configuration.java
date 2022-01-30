@@ -81,7 +81,7 @@ public class Configuration
                 {
                     continue;
                 }
-                String[] elements = line.split("=", 2);
+                String[] elements = line.split("=");
                 values.add(new ConfigurationValue(elements[0], elements[1]));
             }
             return applyDefaults(values);
