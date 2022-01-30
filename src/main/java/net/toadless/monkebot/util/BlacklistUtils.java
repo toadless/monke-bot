@@ -5,7 +5,7 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.toadless.monkebot.Monke;
-import net.toadless.monkebot.objects.cache.GeneralGuildCache;
+import net.toadless.monkebot.objects.cache.BlacklistCache;
 import net.toadless.monkebot.objects.pojos.ChannelBlacklists;
 import net.toadless.monkebot.objects.pojos.WordBlacklists;
 import org.bson.Document;
@@ -47,12 +47,12 @@ public class BlacklistUtils
 
     public static boolean isChannelBlacklisted(MessageReceivedEvent event, Monke monke)
     {
-        return GeneralGuildCache.getCache(event.getGuild().getIdLong(), monke).getBlacklistedChannels().contains(event.getChannel());
+        return BlacklistCache.getCache(event.getGuild().getIdLong(), monke).getBlacklistedChannels().contains(event.getChannel());
     }
 
     public static List<String> getBlacklistedPhrases(Guild guild, Monke monke)
     {
-        return GeneralGuildCache.getCache(guild.getIdLong(), monke).getBlacklistedPhrases();
+        return BlacklistCache.getCache(guild.getIdLong(), monke).getBlacklistedPhrases();
     }
 
     public static void addPhrase(Guild guild, String phrase, Monke monke)
@@ -68,7 +68,7 @@ public class BlacklistUtils
                     phrase
             ));
 
-            GeneralGuildCache.getCache(guild.getIdLong(), monke).addBlacklistedPhrase(phrase);
+            BlacklistCache.getCache(guild.getIdLong(), monke).addBlacklistedPhrase(phrase);
         }
         catch (Exception exception)
         {
@@ -96,7 +96,7 @@ public class BlacklistUtils
                     channel.getIdLong()
             ));
 
-            GeneralGuildCache.getCache(guild.getIdLong(), monke).addBlacklistedChannel(channel);
+            BlacklistCache.getCache(guild.getIdLong(), monke).addBlacklistedChannel(channel);
 
             return true;
         }
@@ -110,7 +110,7 @@ public class BlacklistUtils
     public static List<ChannelBlacklists> getBlacklistedChannels(Guild guild, Monke monke)
     {
         List<ChannelBlacklists> result = new ArrayList<>();
-        List<MessageChannel> blacklistedChannels = GeneralGuildCache.getCache(guild.getIdLong(), monke).getBlacklistedChannels();
+        List<MessageChannel> blacklistedChannels = BlacklistCache.getCache(guild.getIdLong(), monke).getBlacklistedChannels();
 
         for (var row : blacklistedChannels)
         {
@@ -130,7 +130,7 @@ public class BlacklistUtils
             var document = new Document("guildId", guild.getIdLong()).append("channelId", channel.getIdLong());
             var delete = collection.deleteOne(document);
 
-            GeneralGuildCache.getCache(guild.getIdLong(), monke).removeBlacklistedChannel(channel);
+            BlacklistCache.getCache(guild.getIdLong(), monke).removeBlacklistedChannel(channel);
 
             return delete.wasAcknowledged();
         }
@@ -152,7 +152,7 @@ public class BlacklistUtils
             var document = new Document("guildId", guild.getIdLong()).append("phrase", phrase);
             var delete = collection.deleteOne(document);
 
-            GeneralGuildCache.getCache(guild.getIdLong(), monke).removeBlacklistedPhrase(phrase);
+            BlacklistCache.getCache(guild.getIdLong(), monke).removeBlacklistedPhrase(phrase);
 
             return delete.wasAcknowledged();
         }

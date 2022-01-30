@@ -1,9 +1,8 @@
 package net.toadless.monkebot.util;
 
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Member;
 import net.toadless.monkebot.Monke;
-import net.toadless.monkebot.objects.cache.GeneralGuildCache;
+import net.toadless.monkebot.objects.cache.BlacklistCache;
 import net.toadless.monkebot.objects.cache.GuildSettingsCache;
 import net.toadless.monkebot.objects.database.Tempban;
 import net.toadless.monkebot.objects.pojos.ChannelBlacklists;
@@ -81,7 +80,7 @@ public class DatabaseUtils
             collection.findOneAndDelete(eq("_id", guild.getIdLong()));
 
             GuildSettingsCache.removeCache(guild.getIdLong());
-            GeneralGuildCache.removeCache(guild.getIdLong());
+            BlacklistCache.removeCache(guild.getIdLong());
         }
         catch (Exception exception)
         {
@@ -100,11 +99,11 @@ public class DatabaseUtils
             var document = new Document("guildId", guildId);
             var query = collection.find(document);
 
-            GeneralGuildCache generalGuildCache = GeneralGuildCache.getCache(guildId, monke);
+            BlacklistCache blacklistCache = BlacklistCache.getCache(guildId, monke);
 
             for (var row : query)
             {
-                generalGuildCache.addBlacklistedPhrase(row.getPhrase());
+                blacklistCache.addBlacklistedPhrase(row.getPhrase());
             }
         }
         catch (Exception exception)
@@ -123,11 +122,11 @@ public class DatabaseUtils
             var document = new Document("guildId", guildId);
             var query = collection.find(document);
 
-            GeneralGuildCache generalGuildCache = GeneralGuildCache.getCache(guildId, monke);
+            BlacklistCache blacklistCache = BlacklistCache.getCache(guildId, monke);
 
             for (var row : query)
             {
-                generalGuildCache.addBlacklistedChannel(monke.getShardManager().getGuildById(guildId).getTextChannelById(row.getChannelId()));
+                blacklistCache.addBlacklistedChannel(monke.getShardManager().getGuildById(guildId).getTextChannelById(row.getChannelId()));
             }
         }
         catch (Exception exception)
