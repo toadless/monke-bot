@@ -1,19 +1,23 @@
 package net.toadless.monkebot.objects.cache;
 
 import net.dv8tion.jda.api.entities.MessageChannel;
+import net.jodah.expiringmap.ExpirationPolicy;
+import net.jodah.expiringmap.ExpiringMap;
 import net.toadless.monkebot.Monke;
-import net.toadless.monkebot.objects.pojos.ChannelBlacklists;
-import net.toadless.monkebot.objects.pojos.WordBlacklists;
+import net.toadless.monkebot.util.DatabaseUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 public class GeneralGuildCache
 {
-    private static final Map<Long, GeneralGuildCache> GUILD_CACHES = new ConcurrentHashMap<>();
+    private static final Map<Long, GeneralGuildCache> GUILD_CACHES = ExpiringMap.builder()
+            .expirationPolicy(ExpirationPolicy.ACCESSED)
+            .expiration(1, TimeUnit.MINUTES)
+            .build();
 
     private final List<String> blacklistedPhrases;
     private final List<MessageChannel> blacklistedChannels;
@@ -37,6 +41,7 @@ public class GeneralGuildCache
         {
             cache = new GeneralGuildCache(guildId, monke);
             GUILD_CACHES.put(guildId, cache);
+            DatabaseUtils.syncGeneralGuild(guildId, monke);
         }
         return cache;
     }

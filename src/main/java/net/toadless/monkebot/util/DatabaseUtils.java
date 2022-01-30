@@ -39,9 +39,6 @@ public class DatabaseUtils
             var guilds = collection.find(new Document("_id", guild.getIdLong()));
 
             if (guilds.first() == null) collection.insertOne(new Document("_id", guild.getIdLong()));
-
-            syncBlacklistedChannels(guild, monke);
-            syncBlacklistedPhrases(guild, monke);
         }
         catch (Exception exception)
         {
@@ -93,17 +90,17 @@ public class DatabaseUtils
     }
 
 
-    private static void syncBlacklistedPhrases(Guild guild, Monke monke)
+    private static void syncBlacklistedPhrases(long guildId, Monke monke)
     {
         try
         {
             var connection = monke.getDatabaseHandler().getConnection();
             var database = connection.getDatabase(monke.getDatabaseHandler().getDatabase().getName());
             var collection = database.getCollection(BlacklistUtils.wordCollection, WordBlacklists.class);
-            var document = new Document("guildId", guild.getIdLong());
+            var document = new Document("guildId", guildId);
             var query = collection.find(document);
 
-            GeneralGuildCache generalGuildCache = GeneralGuildCache.getCache(guild.getIdLong(), monke);
+            GeneralGuildCache generalGuildCache = GeneralGuildCache.getCache(guildId, monke);
 
             for (var row : query)
             {
@@ -116,26 +113,32 @@ public class DatabaseUtils
         }
     }
 
-    private static void syncBlacklistedChannels(Guild guild, Monke monke)
+    private static void syncBlacklistedChannels(long guildId, Monke monke)
     {
         try
         {
             var connection = monke.getDatabaseHandler().getConnection();
             var database = connection.getDatabase(monke.getDatabaseHandler().getDatabase().getName());
             var collection = database.getCollection(BlacklistUtils.channelCollection, ChannelBlacklists.class);
-            var document = new Document("guildId", guild.getIdLong());
+            var document = new Document("guildId", guildId);
             var query = collection.find(document);
 
-            GeneralGuildCache generalGuildCache = GeneralGuildCache.getCache(guild.getIdLong(), monke);
+            GeneralGuildCache generalGuildCache = GeneralGuildCache.getCache(guildId, monke);
 
             for (var row : query)
             {
-                generalGuildCache.addBlacklistedChannel(monke.getShardManager().getGuildById(guild.getIdLong()).getTextChannelById(row.getChannelId()));
+                generalGuildCache.addBlacklistedChannel(monke.getShardManager().getGuildById(guildId).getTextChannelById(row.getChannelId()));
             }
         }
         catch (Exception exception)
         {
             monke.getLogger().error("A mongo error occurred", exception);
         }
+    }
+
+    public static void syncGeneralGuild(long guildId, Monke monke)
+    {
+        syncBlacklistedChannels(guildId, monke);
+        syncBlacklistedPhrases(guildId, monke);
     }
 }
