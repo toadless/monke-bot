@@ -10,7 +10,9 @@ jobs:
       - name: restore gradle.properties
         env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
-          GRADLE_PROPERTIES: ${{ secrets.GRADLE_PROPERTIES }}
+          MONKE_DB_URL: ${{ secrets.MONKE_DB_URL }}
+          MONKE_DB_USER: ${{ secrets.MONKE_DB_USER }}
+          MONKE_DB_PASSWORD: ${{ secrets.MONKE_DB_PASSWORD }}
         shell: bash
         run: |
           mkdir -p ~/.gradle/
