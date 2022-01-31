@@ -14,9 +14,9 @@ jobs:
         run: |
           mkdir -p ~/.gradle/
           echo "::set-env name=GRADLE_USER_HOME::$HOME/.gradle"
-          echo "MONKE_DB_URL=${{ secrets.MONKE_DB_URL }}" > ~/.gradle/gradle.properties
-          echo "MONKE_DB_USER=${{ secrets.MONKE_DB_USER }}" > ~/.gradle/gradle.properties
-          echo "MONKE_DB_PASSWORD=${{ secrets.MONKE_DB_PASSWORD }}" > ~/.gradle/gradle.properties
+          echo ${{ secrets.MONKE_DB_URL }} > ~/.gradle/gradle.properties
+          echo ${{ secrets.MONKE_DB_USER }} > ~/.gradle/gradle.properties
+          echo ${{ secrets.MONKE_DB_PASSWORD }} > ~/.gradle/gradle.properties
       - uses: actions/checkout@v2
       - name: Set up JDK 15
         uses: actions/setup-java@v2
