@@ -30,7 +30,7 @@ jobs:
         uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
       - name: gradlew build
         run: |
-          ./gradlew clean build -x jooq
+          ./gradlew clean build
       - name: docker build
         run: |
           docker build . -t toadlesss/monkebot:latest
