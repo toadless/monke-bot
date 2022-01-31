@@ -7,18 +7,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: restore gradle.properties
+      - name: create gradle.properties
         shell: bash
         env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
         run: |
           mkdir -p ~/.gradle/
           echo "::set-env name=GRADLE_USER_HOME::$HOME/.gradle"
-          cat > ~/.gradle/gradle.properties << EOL
-          MONKE_DB_URL=${{ secrets.MONKE_DB_URL }}
-          MONKE_DB_PASSWORD=${{ secrets.MONKE_DB_PASSWORD }}
-          MONKE_DB_USER=${{ secrets.MONKE_DB_USER }
-          EOL
+      - uses: DamianReeves/write-file-action
+        name: populate gradle.properties
+        with:
+          path: ~/.gradle/gradle.properties
+          contents: |
+            MONKE_DB_URL=${{ secrets.MONKE_DB_URL }}
+            MONKE_DB_USER=${{ secrets.MONKE_DB_USER }}
+            MONKE_DB_PASSWORD=${{ secrets.MONKE_DB_PASSWORD }}
+          write-mode: append
       - uses: actions/checkout@v2
       - name: Set up JDK 15
         uses: actions/setup-java@v2
