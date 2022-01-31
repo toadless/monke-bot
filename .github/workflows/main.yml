@@ -9,6 +9,8 @@ jobs:
       - uses: actions/checkout@v2
       - name: restore gradle.properties
         shell: bash
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
         run: |
           mkdir -p ~/.gradle/
           echo "::set-env name=GRADLE_USER_HOME::$HOME/.gradle"
