@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import org.jooq.generated.Tables;
 import org.jooq.generated.tables.Guilds;
 import org.jooq.generated.tables.pojos.Tempbans;
+import org.jooq.generated.tables.pojos.Votes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,6 +102,29 @@ public class DatabaseUtils
                 if (value.getMutedUntil().isBefore(LocalDateTime.now()))
                 {
                     result.add(new Tempbans(value.getId(), value.getUserId(), value.getGuildId(), value.getMutedUntil()));
+                }
+            }
+        }
+        catch (Exception exception)
+        {
+            monke.getLogger().error("An SQL error occurred", exception);
+        }
+        return result;
+    }
+
+
+    public static List<Votes> getExpiredVotes(Monke monke)
+    {
+        List<Votes> result = new ArrayList<>();
+        try (Connection connection = monke.getDatabaseHandler().getConnection())
+        {
+            var context = monke.getDatabaseHandler().getContext(connection).selectFrom(Tables.VOTES);
+
+            for (var value : context.fetch())
+            {
+                if (value.getExpiry().isBefore(LocalDateTime.now()))
+                {
+                    result.add(new Votes(value.getId(), value.getVoteId(), value.getGuildId(), value.getDirectMessageId(), value.getUserId(), value.getOption(), value.getMaxOptions(), value.getExpiry(), value.getHasVoted()));
                 }
             }
         }

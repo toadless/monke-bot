@@ -41,6 +41,11 @@ public class Sequences {
     public static final Sequence<Long> TEMPBANS_ID_SEQ = Internal.createSequence("tempbans_id_seq", Public.PUBLIC, SQLDataType.BIGINT.nullable(false), null, null, null, null, false, null);
 
     /**
+     * The sequence <code>public.votes_id_seq</code>
+     */
+    public static final Sequence<Long> VOTES_ID_SEQ = Internal.createSequence("votes_id_seq", Public.PUBLIC, SQLDataType.BIGINT.nullable(false), null, null, null, null, false, null);
+
+    /**
      * The sequence <code>public.warnings_id_seq</code>
      */
     public static final Sequence<Long> WARNINGS_ID_SEQ = Internal.createSequence("warnings_id_seq", Public.PUBLIC, SQLDataType.BIGINT.nullable(false), null, null, null, null, false, null);

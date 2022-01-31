@@ -123,6 +123,16 @@ public class GuildSettingsCache implements ICache<String, CachedGuildSetting>
         return cacheGetLong("welcomechannel", GUILDS.WELCOME_CHANNEL);
     }
 
+    public long getVoteChannel()
+    {
+        return cacheGetLong("votechannel", GUILDS.VOTE_CHANNEL);
+    }
+
+    public void setVoteChannel(long newVoteChannel)
+    {
+        cachePut("votechannel", GUILDS.VOTE_CHANNEL, newVoteChannel);
+    }
+
     public long getTempBanRole()
     {
         return cacheGetLong("tempbanrole", GUILDS.MUTED_ROLE);

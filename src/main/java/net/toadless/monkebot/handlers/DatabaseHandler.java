@@ -49,6 +49,9 @@ public class DatabaseHandler
         LOGGER.debug("Initialise table warnings.");
         initTable("warnings");
 
+        LOGGER.debug("Initialise table votes.");
+        initTable("votes");
+
         LOGGER.debug("Initialise table word_blacklists.");
         initTable("word_blacklists");
 

@@ -11,7 +11,7 @@ import org.jooq.Field;
 import org.jooq.ForeignKey;
 import org.jooq.Name;
 import org.jooq.Record;
-import org.jooq.Row6;
+import org.jooq.Row7;
 import org.jooq.Schema;
 import org.jooq.Table;
 import org.jooq.TableField;
@@ -65,6 +65,11 @@ public class Guilds extends TableImpl<GuildsRecord> {
      * The column <code>public.guilds.report_channel</code>.
      */
     public final TableField<GuildsRecord, Long> REPORT_CHANNEL = createField(DSL.name("report_channel"), SQLDataType.BIGINT.nullable(false).defaultValue(DSL.field("'-1'::integer", SQLDataType.BIGINT)), this, "");
+
+    /**
+     * The column <code>public.guilds.vote_channel</code>.
+     */
+    public final TableField<GuildsRecord, Long> VOTE_CHANNEL = createField(DSL.name("vote_channel"), SQLDataType.BIGINT.nullable(false).defaultValue(DSL.field("'-1'::integer", SQLDataType.BIGINT)), this, "");
 
     /**
      * The column <code>public.guilds.welcome_channel</code>.
@@ -151,11 +156,11 @@ public class Guilds extends TableImpl<GuildsRecord> {
     }
 
     // -------------------------------------------------------------------------
-    // Row6 type methods
+    // Row7 type methods
     // -------------------------------------------------------------------------
 
     @Override
-    public Row6<Long, Long, Long, Long, Long, String> fieldsRow() {
-        return (Row6) super.fieldsRow();
+    public Row7<Long, Long, Long, Long, Long, Long, String> fieldsRow() {
+        return (Row7) super.fieldsRow();
     }
 }

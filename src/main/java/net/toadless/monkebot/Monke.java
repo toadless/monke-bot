@@ -31,6 +31,7 @@ import net.toadless.monkebot.objects.bot.ConfigOption;
 import net.toadless.monkebot.objects.bot.Configuration;
 import net.toadless.monkebot.objects.bot.EventWaiter;
 import net.toadless.monkebot.objects.database.Tempban;
+import net.toadless.monkebot.objects.database.Vote;
 import net.toadless.monkebot.objects.info.BotInfo;
 import net.toadless.monkebot.util.DatabaseUtils;
 import net.toadless.monkebot.util.StringUtils;
@@ -153,6 +154,7 @@ public class Monke extends ListenerAdapter
         getTaskHandler().addRepeatingTask(() ->
         {
             DatabaseUtils.getExpiredTempbans(this).forEach(tempban -> Tempban.remove(tempban.getUserId(), this));
+            DatabaseUtils.getExpiredVotes(this).forEach(vote -> Vote.closeById(vote.getVoteId(), vote.getGuildId(), this));
         }, TimeUnit.SECONDS, 15);
 
         getTaskHandler().addRepeatingTask(() -> switchStatus(event.getJDA()), TimeUnit.MINUTES, 2);

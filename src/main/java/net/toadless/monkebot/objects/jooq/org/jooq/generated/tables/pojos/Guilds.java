@@ -19,6 +19,7 @@ public class Guilds implements Serializable {
     private final Long   logChannel;
     private final Long   mutedRole;
     private final Long   reportChannel;
+    private final Long   voteChannel;
     private final Long   welcomeChannel;
     private final String prefix;
 
@@ -27,6 +28,7 @@ public class Guilds implements Serializable {
         this.logChannel = value.logChannel;
         this.mutedRole = value.mutedRole;
         this.reportChannel = value.reportChannel;
+        this.voteChannel = value.voteChannel;
         this.welcomeChannel = value.welcomeChannel;
         this.prefix = value.prefix;
     }
@@ -36,6 +38,7 @@ public class Guilds implements Serializable {
         Long   logChannel,
         Long   mutedRole,
         Long   reportChannel,
+        Long   voteChannel,
         Long   welcomeChannel,
         String prefix
     ) {
@@ -43,6 +46,7 @@ public class Guilds implements Serializable {
         this.logChannel = logChannel;
         this.mutedRole = mutedRole;
         this.reportChannel = reportChannel;
+        this.voteChannel = voteChannel;
         this.welcomeChannel = welcomeChannel;
         this.prefix = prefix;
     }
@@ -76,6 +80,13 @@ public class Guilds implements Serializable {
     }
 
     /**
+     * Getter for <code>public.guilds.vote_channel</code>.
+     */
+    public Long getVoteChannel() {
+        return this.voteChannel;
+    }
+
+    /**
      * Getter for <code>public.guilds.welcome_channel</code>.
      */
     public Long getWelcomeChannel() {
@@ -97,6 +108,7 @@ public class Guilds implements Serializable {
         sb.append(", ").append(logChannel);
         sb.append(", ").append(mutedRole);
         sb.append(", ").append(reportChannel);
+        sb.append(", ").append(voteChannel);
         sb.append(", ").append(welcomeChannel);
         sb.append(", ").append(prefix);
 

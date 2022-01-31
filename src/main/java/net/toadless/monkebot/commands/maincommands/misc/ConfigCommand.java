@@ -3,6 +3,7 @@ package net.toadless.monkebot.commands.maincommands.misc;
 import net.toadless.monkebot.commands.subcommands.config.LogConfigCommand;
 import net.toadless.monkebot.commands.subcommands.config.PrefixConfigCommand;
 import net.toadless.monkebot.commands.subcommands.config.TempbanConfigCommand;
+import net.toadless.monkebot.commands.subcommands.config.VoteConfigCommand;
 import net.toadless.monkebot.objects.command.Command;
 import net.toadless.monkebot.objects.command.CommandEvent;
 import net.toadless.monkebot.objects.exception.CommandException;
@@ -20,7 +21,8 @@ public class ConfigCommand extends Command
         addChildren(
                 new PrefixConfigCommand(this),
                 new LogConfigCommand(this),
-                new TempbanConfigCommand(this)
+                new TempbanConfigCommand(this),
+                new VoteConfigCommand(this)
         );
     }
 

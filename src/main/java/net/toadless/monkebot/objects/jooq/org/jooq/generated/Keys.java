@@ -13,6 +13,7 @@ import org.jooq.generated.tables.ReactionRoles;
 import org.jooq.generated.tables.Reports;
 import org.jooq.generated.tables.Roles;
 import org.jooq.generated.tables.Tempbans;
+import org.jooq.generated.tables.Votes;
 import org.jooq.generated.tables.Warnings;
 import org.jooq.generated.tables.WordBlacklists;
 import org.jooq.generated.tables.records.ChannelBlacklistsRecord;
@@ -21,6 +22,7 @@ import org.jooq.generated.tables.records.ReactionRolesRecord;
 import org.jooq.generated.tables.records.ReportsRecord;
 import org.jooq.generated.tables.records.RolesRecord;
 import org.jooq.generated.tables.records.TempbansRecord;
+import org.jooq.generated.tables.records.VotesRecord;
 import org.jooq.generated.tables.records.WarningsRecord;
 import org.jooq.generated.tables.records.WordBlacklistsRecord;
 import org.jooq.impl.DSL;
@@ -48,6 +50,7 @@ public class Keys {
     public static final UniqueKey<TempbansRecord> TEMPBANS_GUILD_ID_KEY = Internal.createUniqueKey(Tempbans.TEMPBANS, DSL.name("tempbans_guild_id_key"), new TableField[] { Tempbans.TEMPBANS.GUILD_ID }, true);
     public static final UniqueKey<TempbansRecord> TEMPBANS_PKEY = Internal.createUniqueKey(Tempbans.TEMPBANS, DSL.name("tempbans_pkey"), new TableField[] { Tempbans.TEMPBANS.ID }, true);
     public static final UniqueKey<TempbansRecord> TEMPBANS_USER_ID_KEY = Internal.createUniqueKey(Tempbans.TEMPBANS, DSL.name("tempbans_user_id_key"), new TableField[] { Tempbans.TEMPBANS.USER_ID }, true);
+    public static final UniqueKey<VotesRecord> VOTES_PKEY = Internal.createUniqueKey(Votes.VOTES, DSL.name("votes_pkey"), new TableField[] { Votes.VOTES.ID }, true);
     public static final UniqueKey<WarningsRecord> WARNINGS_PKEY = Internal.createUniqueKey(Warnings.WARNINGS, DSL.name("warnings_pkey"), new TableField[] { Warnings.WARNINGS.ID }, true);
     public static final UniqueKey<WordBlacklistsRecord> WORD_BLACKLISTS_PKEY = Internal.createUniqueKey(WordBlacklists.WORD_BLACKLISTS, DSL.name("word_blacklists_pkey"), new TableField[] { WordBlacklists.WORD_BLACKLISTS.ID }, true);
 
@@ -60,6 +63,7 @@ public class Keys {
     public static final ForeignKey<ReportsRecord, GuildsRecord> REPORTS__REPORTS_GUILD_ID_FKEY = Internal.createForeignKey(Reports.REPORTS, DSL.name("reports_guild_id_fkey"), new TableField[] { Reports.REPORTS.GUILD_ID }, Keys.GUILDS_PKEY, new TableField[] { Guilds.GUILDS.GUILD_ID }, true);
     public static final ForeignKey<RolesRecord, GuildsRecord> ROLES__ROLES_GUILD_ID_FKEY = Internal.createForeignKey(Roles.ROLES, DSL.name("roles_guild_id_fkey"), new TableField[] { Roles.ROLES.GUILD_ID }, Keys.GUILDS_PKEY, new TableField[] { Guilds.GUILDS.GUILD_ID }, true);
     public static final ForeignKey<TempbansRecord, GuildsRecord> TEMPBANS__TEMPBANS_GUILD_ID_FKEY = Internal.createForeignKey(Tempbans.TEMPBANS, DSL.name("tempbans_guild_id_fkey"), new TableField[] { Tempbans.TEMPBANS.GUILD_ID }, Keys.GUILDS_PKEY, new TableField[] { Guilds.GUILDS.GUILD_ID }, true);
+    public static final ForeignKey<VotesRecord, GuildsRecord> VOTES__VOTES_GUILD_ID_FKEY = Internal.createForeignKey(Votes.VOTES, DSL.name("votes_guild_id_fkey"), new TableField[] { Votes.VOTES.GUILD_ID }, Keys.GUILDS_PKEY, new TableField[] { Guilds.GUILDS.GUILD_ID }, true);
     public static final ForeignKey<WarningsRecord, GuildsRecord> WARNINGS__WARNINGS_GUILD_ID_FKEY = Internal.createForeignKey(Warnings.WARNINGS, DSL.name("warnings_guild_id_fkey"), new TableField[] { Warnings.WARNINGS.GUILD_ID }, Keys.GUILDS_PKEY, new TableField[] { Guilds.GUILDS.GUILD_ID }, true);
     public static final ForeignKey<WordBlacklistsRecord, GuildsRecord> WORD_BLACKLISTS__WORD_BLACKLISTS_GUILD_ID_FKEY = Internal.createForeignKey(WordBlacklists.WORD_BLACKLISTS, DSL.name("word_blacklists_guild_id_fkey"), new TableField[] { WordBlacklists.WORD_BLACKLISTS.GUILD_ID }, Keys.GUILDS_PKEY, new TableField[] { Guilds.GUILDS.GUILD_ID }, true);
 }

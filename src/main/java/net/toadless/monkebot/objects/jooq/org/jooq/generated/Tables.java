@@ -10,6 +10,7 @@ import org.jooq.generated.tables.ReactionRoles;
 import org.jooq.generated.tables.Reports;
 import org.jooq.generated.tables.Roles;
 import org.jooq.generated.tables.Tempbans;
+import org.jooq.generated.tables.Votes;
 import org.jooq.generated.tables.Warnings;
 import org.jooq.generated.tables.WordBlacklists;
 
@@ -49,6 +50,11 @@ public class Tables {
      * The table <code>public.tempbans</code>.
      */
     public static final Tempbans TEMPBANS = Tempbans.TEMPBANS;
+
+    /**
+     * The table <code>public.votes</code>.
+     */
+    public static final Votes VOTES = Votes.VOTES;
 
     /**
      * The table <code>public.warnings</code>.

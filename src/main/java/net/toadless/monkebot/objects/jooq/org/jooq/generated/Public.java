@@ -16,6 +16,7 @@ import org.jooq.generated.tables.ReactionRoles;
 import org.jooq.generated.tables.Reports;
 import org.jooq.generated.tables.Roles;
 import org.jooq.generated.tables.Tempbans;
+import org.jooq.generated.tables.Votes;
 import org.jooq.generated.tables.Warnings;
 import org.jooq.generated.tables.WordBlacklists;
 import org.jooq.impl.SchemaImpl;
@@ -65,6 +66,11 @@ public class Public extends SchemaImpl {
     public final Tempbans TEMPBANS = Tempbans.TEMPBANS;
 
     /**
+     * The table <code>public.votes</code>.
+     */
+    public final Votes VOTES = Votes.VOTES;
+
+    /**
      * The table <code>public.warnings</code>.
      */
     public final Warnings WARNINGS = Warnings.WARNINGS;
@@ -95,6 +101,7 @@ public class Public extends SchemaImpl {
             Sequences.REPORTS_ID_SEQ,
             Sequences.ROLES_ID_SEQ,
             Sequences.TEMPBANS_ID_SEQ,
+            Sequences.VOTES_ID_SEQ,
             Sequences.WARNINGS_ID_SEQ,
             Sequences.WORD_BLACKLISTS_ID_SEQ);
     }
@@ -108,6 +115,7 @@ public class Public extends SchemaImpl {
             Reports.REPORTS,
             Roles.ROLES,
             Tempbans.TEMPBANS,
+            Votes.VOTES,
             Warnings.WARNINGS,
             WordBlacklists.WORD_BLACKLISTS);
     }
