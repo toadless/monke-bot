@@ -10,6 +10,7 @@ import org.jooq.UniqueKey;
 import org.jooq.generated.tables.ChannelBlacklists;
 import org.jooq.generated.tables.Guilds;
 import org.jooq.generated.tables.ReactionRoles;
+import org.jooq.generated.tables.Reminders;
 import org.jooq.generated.tables.Reports;
 import org.jooq.generated.tables.Roles;
 import org.jooq.generated.tables.Tempbans;
@@ -19,6 +20,7 @@ import org.jooq.generated.tables.WordBlacklists;
 import org.jooq.generated.tables.records.ChannelBlacklistsRecord;
 import org.jooq.generated.tables.records.GuildsRecord;
 import org.jooq.generated.tables.records.ReactionRolesRecord;
+import org.jooq.generated.tables.records.RemindersRecord;
 import org.jooq.generated.tables.records.ReportsRecord;
 import org.jooq.generated.tables.records.RolesRecord;
 import org.jooq.generated.tables.records.TempbansRecord;
@@ -43,6 +45,7 @@ public class Keys {
     public static final UniqueKey<ChannelBlacklistsRecord> CHANNEL_BLACKLISTS_PKEY = Internal.createUniqueKey(ChannelBlacklists.CHANNEL_BLACKLISTS, DSL.name("channel_blacklists_pkey"), new TableField[] { ChannelBlacklists.CHANNEL_BLACKLISTS.ID }, true);
     public static final UniqueKey<GuildsRecord> GUILDS_PKEY = Internal.createUniqueKey(Guilds.GUILDS, DSL.name("guilds_pkey"), new TableField[] { Guilds.GUILDS.GUILD_ID }, true);
     public static final UniqueKey<ReactionRolesRecord> REACTION_ROLES_PKEY = Internal.createUniqueKey(ReactionRoles.REACTION_ROLES, DSL.name("reaction_roles_pkey"), new TableField[] { ReactionRoles.REACTION_ROLES.ID }, true);
+    public static final UniqueKey<RemindersRecord> REMINDERS_PKEY = Internal.createUniqueKey(Reminders.REMINDERS, DSL.name("reminders_pkey"), new TableField[] { Reminders.REMINDERS.ID }, true);
     public static final UniqueKey<ReportsRecord> REPORTS_MESSAGE_ID_KEY = Internal.createUniqueKey(Reports.REPORTS, DSL.name("reports_message_id_key"), new TableField[] { Reports.REPORTS.MESSAGE_ID }, true);
     public static final UniqueKey<ReportsRecord> REPORTS_PKEY = Internal.createUniqueKey(Reports.REPORTS, DSL.name("reports_pkey"), new TableField[] { Reports.REPORTS.ID }, true);
     public static final UniqueKey<ReportsRecord> REPORTS_REPORT_MESSAGE_ID_KEY = Internal.createUniqueKey(Reports.REPORTS, DSL.name("reports_report_message_id_key"), new TableField[] { Reports.REPORTS.REPORT_MESSAGE_ID }, true);
@@ -60,6 +63,7 @@ public class Keys {
 
     public static final ForeignKey<ChannelBlacklistsRecord, GuildsRecord> CHANNEL_BLACKLISTS__CHANNEL_BLACKLISTS_GUILD_ID_FKEY = Internal.createForeignKey(ChannelBlacklists.CHANNEL_BLACKLISTS, DSL.name("channel_blacklists_guild_id_fkey"), new TableField[] { ChannelBlacklists.CHANNEL_BLACKLISTS.GUILD_ID }, Keys.GUILDS_PKEY, new TableField[] { Guilds.GUILDS.GUILD_ID }, true);
     public static final ForeignKey<ReactionRolesRecord, GuildsRecord> REACTION_ROLES__REACTION_ROLES_GUILD_ID_FKEY = Internal.createForeignKey(ReactionRoles.REACTION_ROLES, DSL.name("reaction_roles_guild_id_fkey"), new TableField[] { ReactionRoles.REACTION_ROLES.GUILD_ID }, Keys.GUILDS_PKEY, new TableField[] { Guilds.GUILDS.GUILD_ID }, true);
+    public static final ForeignKey<RemindersRecord, GuildsRecord> REMINDERS__REMINDERS_GUILD_ID_FKEY = Internal.createForeignKey(Reminders.REMINDERS, DSL.name("reminders_guild_id_fkey"), new TableField[] { Reminders.REMINDERS.GUILD_ID }, Keys.GUILDS_PKEY, new TableField[] { Guilds.GUILDS.GUILD_ID }, true);
     public static final ForeignKey<ReportsRecord, GuildsRecord> REPORTS__REPORTS_GUILD_ID_FKEY = Internal.createForeignKey(Reports.REPORTS, DSL.name("reports_guild_id_fkey"), new TableField[] { Reports.REPORTS.GUILD_ID }, Keys.GUILDS_PKEY, new TableField[] { Guilds.GUILDS.GUILD_ID }, true);
     public static final ForeignKey<RolesRecord, GuildsRecord> ROLES__ROLES_GUILD_ID_FKEY = Internal.createForeignKey(Roles.ROLES, DSL.name("roles_guild_id_fkey"), new TableField[] { Roles.ROLES.GUILD_ID }, Keys.GUILDS_PKEY, new TableField[] { Guilds.GUILDS.GUILD_ID }, true);
     public static final ForeignKey<TempbansRecord, GuildsRecord> TEMPBANS__TEMPBANS_GUILD_ID_FKEY = Internal.createForeignKey(Tempbans.TEMPBANS, DSL.name("tempbans_guild_id_fkey"), new TableField[] { Tempbans.TEMPBANS.GUILD_ID }, Keys.GUILDS_PKEY, new TableField[] { Guilds.GUILDS.GUILD_ID }, true);

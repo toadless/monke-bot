@@ -7,6 +7,7 @@ package org.jooq.generated;
 import org.jooq.generated.tables.ChannelBlacklists;
 import org.jooq.generated.tables.Guilds;
 import org.jooq.generated.tables.ReactionRoles;
+import org.jooq.generated.tables.Reminders;
 import org.jooq.generated.tables.Reports;
 import org.jooq.generated.tables.Roles;
 import org.jooq.generated.tables.Tempbans;
@@ -35,6 +36,11 @@ public class Tables {
      * The table <code>public.reaction_roles</code>.
      */
     public static final ReactionRoles REACTION_ROLES = ReactionRoles.REACTION_ROLES;
+
+    /**
+     * The table <code>public.reminders</code>.
+     */
+    public static final Reminders REMINDERS = Reminders.REMINDERS;
 
     /**
      * The table <code>public.reports</code>.

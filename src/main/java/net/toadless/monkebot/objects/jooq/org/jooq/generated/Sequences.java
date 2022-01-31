@@ -26,6 +26,11 @@ public class Sequences {
     public static final Sequence<Long> REACTION_ROLES_ID_SEQ = Internal.createSequence("reaction_roles_id_seq", Public.PUBLIC, SQLDataType.BIGINT.nullable(false), null, null, null, null, false, null);
 
     /**
+     * The sequence <code>public.reminders_id_seq</code>
+     */
+    public static final Sequence<Long> REMINDERS_ID_SEQ = Internal.createSequence("reminders_id_seq", Public.PUBLIC, SQLDataType.BIGINT.nullable(false), null, null, null, null, false, null);
+
+    /**
      * The sequence <code>public.reports_id_seq</code>
      */
     public static final Sequence<Long> REPORTS_ID_SEQ = Internal.createSequence("reports_id_seq", Public.PUBLIC, SQLDataType.BIGINT.nullable(false), null, null, null, null, false, null);

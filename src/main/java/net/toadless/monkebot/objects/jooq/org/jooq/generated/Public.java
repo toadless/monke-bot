@@ -13,6 +13,7 @@ import org.jooq.Table;
 import org.jooq.generated.tables.ChannelBlacklists;
 import org.jooq.generated.tables.Guilds;
 import org.jooq.generated.tables.ReactionRoles;
+import org.jooq.generated.tables.Reminders;
 import org.jooq.generated.tables.Reports;
 import org.jooq.generated.tables.Roles;
 import org.jooq.generated.tables.Tempbans;
@@ -49,6 +50,11 @@ public class Public extends SchemaImpl {
      * The table <code>public.reaction_roles</code>.
      */
     public final ReactionRoles REACTION_ROLES = ReactionRoles.REACTION_ROLES;
+
+    /**
+     * The table <code>public.reminders</code>.
+     */
+    public final Reminders REMINDERS = Reminders.REMINDERS;
 
     /**
      * The table <code>public.reports</code>.
@@ -98,6 +104,7 @@ public class Public extends SchemaImpl {
         return Arrays.<Sequence<?>>asList(
             Sequences.CHANNEL_BLACKLISTS_ID_SEQ,
             Sequences.REACTION_ROLES_ID_SEQ,
+            Sequences.REMINDERS_ID_SEQ,
             Sequences.REPORTS_ID_SEQ,
             Sequences.ROLES_ID_SEQ,
             Sequences.TEMPBANS_ID_SEQ,
@@ -112,6 +119,7 @@ public class Public extends SchemaImpl {
             ChannelBlacklists.CHANNEL_BLACKLISTS,
             Guilds.GUILDS,
             ReactionRoles.REACTION_ROLES,
+            Reminders.REMINDERS,
             Reports.REPORTS,
             Roles.ROLES,
             Tempbans.TEMPBANS,

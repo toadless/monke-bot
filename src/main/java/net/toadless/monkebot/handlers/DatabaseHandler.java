@@ -43,6 +43,9 @@ public class DatabaseHandler
         LOGGER.debug("Initialise table reaction_roles.");
         initTable("reaction_roles");
 
+        LOGGER.debug("Initialise table reminders.");
+        initTable("reminders");
+
         LOGGER.debug("Initialise table reports.");
         initTable("reports");
 
