@@ -80,7 +80,7 @@ public class WebUtils
                     success.accept(post);
                 }
             }
-        });
+        }); 
     }
 
     public static void getWikipediaPage(CommandEvent event, String subject, Consumer<WikipediaPage> success, Consumer<CommandException> failure)
