@@ -33,13 +33,13 @@ jobs:
           ./gradlew clean build
       - name: docker build
         run: |
-          docker build . -t frogg1t/monkebot:latest
+          docker build . -t toadlessss/monkebot:latest
       - name: docker push
         uses: docker/build-push-action@v1
         with:
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_PASS }}
-          repository: frogg1t/monkebot
+          repository: toadlessss/monkebot
           tags: latest
       - name: reload vps
         uses: appleboy/ssh-action@master
