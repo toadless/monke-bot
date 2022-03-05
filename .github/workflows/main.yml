@@ -33,7 +33,7 @@ jobs:
           ./gradlew clean build
       - name: docker build
         run: |
-          docker build . -t toadlesss/monkebot:latest
+          docker build . -t frogg1t/monkebot:latest
       - name: docker push
         uses: docker/build-push-action@v1
         with:
